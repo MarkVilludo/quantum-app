@@ -15,6 +15,7 @@ phases:
     commands:
       - touch database/database.sqlite
       - composer install
+      - php artisan key:generate
       - npm install  # Assuming you also have Node.js dependencies
       - cp .env.example .env # copy .env file
       - php artisan migrate # migrate the database, the default is sqlite
