@@ -1,33 +1,29 @@
-version: 0.2  # Specify the buildspec version
+version: 0.2
 
 phases:
   install:
-    # Define commands to install dependencies for your build process
-    # Example: install PHP and Composer
     runtime-versions:
       php: 8.2
     commands:
       - apt-get update -y
       - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-  pre_build:
-    # Optional phase for commands to be executed before the main build
-    # Example: install additional dependencies or run tests
-    commands:
-      - touch database/database.sqlite
-      - composer install
-      - php artisan key:generate
-      - npm install  # Assuming you also have Node.js dependencies
-      - cp .env.example .env # copy .env file
-      - php artisan migrate # migrate the database, the default is sqlite
-      - npm run build # we use vite in our application in laravel 11, it required
-artifacts:
-  # Define artifacts to be uploaded after the build
-  # Example: upload entire project directory as a zip
-  files:
-    - '**/*'  # Includes all files in the project directory
-  name: $(date +%Y-%m-%dT%H:%M:%S).zip  # Zip name with timestamp
 
-# Optional configuration for proxy and logs
-proxy:
-  upload-artifacts: yes
-  logs: yes
+  pre_build:
+    commands:
+      - cp .env.example .env
+      - touch database/database.sqlite
+      - composer install --no-dev --optimize-autoloader
+      - php artisan key:generate
+      - php artisan migrate
+      - npm install
+      - npm run build
+
+  build:
+    commands:
+      - echo "Build phase complete."
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: no
+  base-directory: .  # Ensures the entire Laravel app is uploaded as artifact
