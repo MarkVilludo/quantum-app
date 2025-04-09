@@ -13,6 +13,7 @@ phases:
     # Optional phase for commands to be executed before the main build
     # Example: install additional dependencies or run tests
     commands:
+      - touch database/database.sqlite
       - composer install
       - npm install  # Assuming you also have Node.js dependencies
       - cp .env.example .env # copy .env file
