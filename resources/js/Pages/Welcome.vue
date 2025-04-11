@@ -59,14 +59,6 @@ defineProps({
       <p class="mt-6 text-lg text-gray-700">
         Challenge yourself with engaging quizzes, improve your learning. 
       </p>
-      <div class="mt-10 flex justify-center gap-4">
-        <a href="/quizzes" class="bg-indigo-600 text-white px-6 py-3 rounded-xl shadow hover:bg-indigo-700 transition">
-          Start Quiz
-        </a>
-        <a href="/register" class="bg-gray-200 text-indigo-700 px-6 py-3 rounded-xl shadow hover:bg-gray-300 transition">
-          Sign Up
-        </a>
-      </div>
     </div>
   </section>
 
