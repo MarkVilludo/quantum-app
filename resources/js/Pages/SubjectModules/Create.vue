@@ -6,6 +6,7 @@ import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
     subjects: Array, // Passed from controller
+    error : String
 });
 
 const form = useForm({
@@ -19,6 +20,7 @@ const successMessage = ref('');
 const submitForm = () => {
     form.post(route('subject-modules.store'), {
         onSuccess: () => {
+        
             successMessage.value = 'Subject module created successfully!';
             setTimeout(() => {
                 successMessage.value = '';

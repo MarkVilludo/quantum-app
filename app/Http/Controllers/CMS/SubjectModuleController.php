@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{SubjectModule, Subject};
 use Inertia\Inertia;
+use Illuminate\Validation\Rule;
 
 class SubjectModuleController extends Controller
 {
@@ -39,10 +40,18 @@ class SubjectModuleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('subject_modules')->where(function ($query) use ($request) {
+                    return $query->where('subject_id', $request->input('subject_id'));
+                }),
+            ],
             'subject_id' => 'required|exists:subjects,id',
         ], [
             'name.required' => 'The module name is required.',
+            'name.unique' => 'The module name already exists for this subject.',
             'subject_id.required' => 'Please select a subject.',
             'subject_id.exists' => 'The selected subject is invalid.',
         ]);

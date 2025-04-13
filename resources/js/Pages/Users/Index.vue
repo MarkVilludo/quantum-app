@@ -63,6 +63,7 @@ const deleteUser = (userId) => {
                                     <th class="px-4 py-2 border">Name</th>
                                     <th class="px-4 py-2 border">Email</th>
                                     <th class="px-4 py-2 border">Role</th>
+                                    <th class="px-4 py-2 border">Year ID</th>
                                     <th class="px-4 py-2 border">Actions</th>
                                 </tr>
                             </thead>
@@ -71,6 +72,7 @@ const deleteUser = (userId) => {
                                     <td class="px-4 py-2 border">{{ user.name }}</td>
                                     <td class="px-4 py-2 border">{{ user.email }}</td>
                                     <td class="px-4 py-2 border capitalize">{{ user.role }}</td>
+                                    <td class="px-4 py-2 border capitalize">{{ user.year?.name }}</td>
                                     <td class="px-4 py-2 border capitalize">
                                         <a :href="route('users.edit', user.id)" class="text-blue-500 hover:text-blue-700">Edit</a>
                                         <!-- Delete Button -->

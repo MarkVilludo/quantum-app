@@ -15,6 +15,7 @@ class AdminController extends Controller
 
         $users = User::query()
             ->whereNot('role', 'admin')
+            ->with('year')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -39,6 +40,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'year_id' => 'nullable',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'role' => 'required|in:teacher,student',
@@ -49,6 +51,7 @@ class AdminController extends Controller
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'role' => $validated['role'],
+            'year_id' => $request->year_id
         ]);
     }
 
@@ -64,6 +67,7 @@ class AdminController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
+            'year_id' => 'nullable',
             'email' => 'required|email|unique:users,email,' . $user->id,
             // Only validate the password if it's present
             'password' => 'nullable|min:8',
@@ -77,6 +81,7 @@ class AdminController extends Controller
             // Remove password from the data if not provided
             unset($data['password']);
         }
+        $user->year_id = $data['year_id'];
         $user->update($data);
     }
 

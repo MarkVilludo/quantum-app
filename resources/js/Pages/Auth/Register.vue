@@ -9,6 +9,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const form = useForm({
     name: '',
     email: '',
+    year_id: '',
     password: '',
     password_confirmation: '',
 });
@@ -54,6 +55,22 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+                <label for="year_id" class="block font-medium text-sm text-gray-700">Year Level</label>
+                <select
+                    id="year_id"
+                    v-model="form.year_id"
+                    required
+                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                >
+                    <option disabled value="">Select year level</option>
+                    <option :value="1">1st Year</option>
+                    <option :value="2">2nd Year</option>
+                    <option :value="3">3rd Year</option>
+                    <option :value="4">4th Year</option>
+                </select>
             </div>
 
             <div class="mt-4">

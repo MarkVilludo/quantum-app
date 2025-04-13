@@ -19,7 +19,7 @@ class SubjectController extends Controller
         }
 
         return Inertia::render('Subjects/Index', [
-            'subjects' => $query->latest()->paginate(10)->withQueryString(),
+            'subjects' => $query->latest()->orderBy('year_id', 'asc')->paginate(10)->withQueryString(),
             'years' => Year::all(),
             'filters' => $request->only('search'),
         ]);
