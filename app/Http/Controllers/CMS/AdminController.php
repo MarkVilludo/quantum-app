@@ -81,7 +81,7 @@ class AdminController extends Controller
             // Remove password from the data if not provided
             unset($data['password']);
         }
-        $user->year_id = $data['year_id'];
+        $user->year_id = $data['year_id'] ?? null;
         $user->update($data);
     }
 
