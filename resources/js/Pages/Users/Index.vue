@@ -63,7 +63,7 @@ const deleteUser = (userId) => {
                                     <th class="px-4 py-2 border">Name</th>
                                     <th class="px-4 py-2 border">Email</th>
                                     <th class="px-4 py-2 border">Role</th>
-                                    <th class="px-4 py-2 border">Year ID</th>
+                                    <th class="px-4 py-2 border">Year</th>
                                     <th class="px-4 py-2 border">Actions</th>
                                 </tr>
                             </thead>
