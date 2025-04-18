@@ -18,9 +18,8 @@ class StudentController extends Controller
 
         $query = LessonQuizResult::query();
 
-        // Filter by user if user_id is provided
-        if ($userId) {
-            $query->where('user_id', $userId);
+        if (auth()->user()->role === 'student') {
+            $query->where('user_id', auth()->user()->id);
         }
 
         // Optionally, search by lesson name
