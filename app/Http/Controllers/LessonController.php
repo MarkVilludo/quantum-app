@@ -70,11 +70,10 @@ class LessonController extends Controller
             'activity' => 'required|array',
             'activity.*.title' => 'required|string',
             'activity.*.question' => 'required|string',
-            'activity.*.difficulty' => 'required|string',
             'activity.*.correct_answer' => 'required|string',
         ]);
 
-        Lesson::create([
+        $lesson = Lesson::create([
             'year_id' => $request->year_id,
             'subject_id' => $request->subject_id,
             'module_id' => $request->module_id,
@@ -82,8 +81,7 @@ class LessonController extends Controller
             'data' => $request->datax,
             'activity' => $request->activity,
         ]);
-
-        return redirect()->back()->with('success', 'Lesson created successfully'); // Redirect to index
+        dd($lesson);
     }
 
     public function edit($lessonId)
@@ -109,7 +107,6 @@ class LessonController extends Controller
             'activity' => 'required|array',
             'activity.*.title' => 'required|string',
             'activity.*.question' => 'required|string',
-            'activity.*.difficulty' => 'required|string',
             'activity.*.correct_answer' => 'required|string',
         ]);
 
@@ -122,8 +119,6 @@ class LessonController extends Controller
             'data' => $request->datax,
             'activity' => $request->activity,
         ]);
-
-        return redirect()->back()->with('success', 'Lesson updated successfully'); // Redirect to index
     }
 
     public function destroy($lessonId)

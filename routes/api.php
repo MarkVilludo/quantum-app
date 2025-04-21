@@ -33,10 +33,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::get('/years', [YearController::class, 'index']);
 Route::get('/subjects/{year}', [SubjectController::class, 'index']);
-Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);
 Route::get('/module-lessons/{moduleId}', [ModuleLessonController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);
+
     Route::post('/lesson-quizzes/submit', [LessonQuizResultController::class, 'store']);
     Route::get('/lesson-quizzes/result/{lessonId}', [LessonQuizResultController::class, 'show']);
 });

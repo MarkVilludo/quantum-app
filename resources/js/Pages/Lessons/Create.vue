@@ -171,12 +171,6 @@ const goBack = () => {
                         <div v-for="(activity, index) in newLesson.activity" :key="index" class="mb-2 p-2 border rounded">
                             <input v-model="activity.title" placeholder="Activity Title" class="border p-2 rounded w-full mb-1" required />
                             <textarea v-model="activity.question" placeholder="Question" class="border p-2 rounded w-full mb-1" required></textarea>
-                            <select v-model="activity.difficulty" id="difficulty" class="border p-2 rounded w-full mb-1">
-                                <option value="" disabled>Select</option>
-                                <option value="Novice">Novice</option>
-                                <option value="Expert">Expert</option>
-                            </select>
-
                             <input v-model="activity.correct_answer" placeholder="Correct Answer" class="border p-2 rounded w-full mb-1" required />
                             <button type="button" @click="removeActivitySection(index)" class="bg-red-500 text-white px-3 py-1 rounded" v-if="newLesson.activity.length > 1">
                                 Remove
