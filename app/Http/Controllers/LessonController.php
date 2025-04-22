@@ -17,6 +17,7 @@ class LessonController extends Controller
         $moduleId = request('module_id');
 
         $lessons = Lesson::query()
+            ->where('year_id', auth()->user()->year_id)
             ->with(['module', 'subject', 'year'])
             ->when($search, fn($query) => $query->where('name', 'LIKE', "%{$search}%"))
             ->when($yearId, fn($query) => $query->where('year_id', $yearId))

@@ -13,7 +13,10 @@ class SubjectModuleController extends Controller
     //
     public function index(Request $request)
     {
-        $query = SubjectModule::with('subject');
+        $query = SubjectModule::with(['subject' => function ($query) {
+            $query->where('year_id', auth()->user()->year_id);
+        }]);
+        $query->with('subject.year');
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
@@ -24,7 +27,7 @@ class SubjectModuleController extends Controller
         }
 
         return Inertia::render('SubjectModules/Index', [
-            'modules' => $query->latest()->paginate(10)->withQueryString(),
+            'modules' => $query->latest()->paginate(10),
             'filters' => $request->only('search', 'subject_id'),
             'subjects' => Subject::all(),
         ]);

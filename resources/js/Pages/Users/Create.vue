@@ -88,6 +88,24 @@ const goBack = () => {
                                 <option :value="3">3rd Year</option>
                                 <option :value="4">4th Year</option>
                             </select>
+                        
+                        </div>
+
+                        <div v-else="form.role === 'teacher'">
+                            <label for="year_id" class="block font-medium text-sm text-gray-700">Year Level handled</label>
+                            <select
+                                id="year_id"
+                                v-model="form.year_id"
+                                required
+                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                            >
+                                <option disabled value="">Select year level</option>
+                                <option :value="1">1st Year</option>
+                                <option :value="2">2nd Year</option>
+                                <option :value="3">3rd Year</option>
+                                <option :value="4">4th Year</option>
+                            </select>
+                        
                         </div>
 
                         <div class="flex items-center justify-between gap-4">

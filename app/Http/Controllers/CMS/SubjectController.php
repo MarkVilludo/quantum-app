@@ -12,7 +12,7 @@ class SubjectController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Subject::with('year');
+        $query = Subject::with('year')->where('year_id', auth()->user()->year_id);
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');

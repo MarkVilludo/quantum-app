@@ -15,6 +15,9 @@ class LessonQuizResultController extends Controller
     {
         // Build the query with lesson and user relationships
         $query = LessonQuizResult::with(['user', 'lesson.quizzes']);
+        $query->with(['lesson' => function ($query) {
+            $query->where('year_id', auth()->user()->year_id);
+        }]);
 
         // Filter by lesson name
         if ($request->search) {
@@ -53,8 +56,8 @@ class LessonQuizResultController extends Controller
                     'name' => $result->user->name,
                 ],
                 'lesson'  => [
-                    'id'    => $result->lesson->id,
-                    'title' => $result->lesson->name,
+                    'id'    => $result->lesson?->id,
+                    'title' => $result->lesson?->name,
                 ],
                 'answers' => $detailedAnswers,
             ];

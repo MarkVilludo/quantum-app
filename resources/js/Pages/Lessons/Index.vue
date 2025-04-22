@@ -132,13 +132,6 @@ const deleteLesson = (lessonId) => {
                             class="border rounded"
                         />
 
-                        <select v-model="selectedYear" @change="fetchSubjects" class="border p-2 rounded">
-                            <option value="">All Years</option>
-                            <option v-for="year in years" :key="year.id" :value="year.id">
-                                {{ year.name }}
-                            </option>
-                        </select>
-
                         <select v-model="selectedSubject" @change="fetchModules" class="border p-2 rounded">
                             <option value="">All Subjects</option>
                             <option v-for="subject in subjectOptions" :key="subject.id" :value="subject.id">
