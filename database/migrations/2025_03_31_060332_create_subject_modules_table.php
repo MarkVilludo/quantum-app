@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->string('name');
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 

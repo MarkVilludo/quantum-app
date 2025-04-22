@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('role')->default('student')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 

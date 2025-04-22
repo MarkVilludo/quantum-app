@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('correct');
             $table->integer('lesson_id');
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 

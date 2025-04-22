@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('total')->default(0);
             $table->json('answers')->nullable(); // stores the answers submitted by user
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 

@@ -71,6 +71,15 @@ const goBack = () => {
                             <div v-if="form.errors.password" class="text-red-500 text-sm">{{ form.errors.password }}</div>
                         </div>
 
+                        <div>
+                            <label class="block text-gray-700">Role</label>
+                            <select v-model="form.role" class="w-full border p-2 rounded">
+                                <option value="student">Student</option>
+                                <option value="teacher">Teacher</option>
+                            </select>
+                            <div v-if="form.errors.role" class="text-red-500 text-sm">{{ form.errors.role }}</div>
+                        </div>
+
                          <div v-if="form.role === 'student'">
                             <label for="year_id" class="block font-medium text-sm text-gray-700">Year Level</label>
                             <select
@@ -87,14 +96,22 @@ const goBack = () => {
                             </select>
                         </div>
 
-                        <div>
-                            <label class="block text-gray-700">Role</label>
-                            <select v-model="form.role" class="w-full border p-2 rounded">
-                                <option value="student">Student</option>
-                                <option value="teacher">Teacher</option>
+                        <div v-else="form.role === 'teacher'">
+                            <label for="year_id" class="block font-medium text-sm text-gray-700">Year Level Handled</label>
+                            <select
+                                id="year_id"
+                                v-model="form.year_id"
+                                required
+                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                            >
+                                <option disabled value="">Select year level</option>
+                                <option :value="1">1st Year</option>
+                                <option :value="2">2nd Year</option>
+                                <option :value="3">3rd Year</option>
+                                <option :value="4">4th Year</option>
                             </select>
-                            <div v-if="form.errors.role" class="text-red-500 text-sm">{{ form.errors.role }}</div>
                         </div>
+
 
                         <div class="flex items-center justify-between gap-4">
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded" :disabled="form.processing">

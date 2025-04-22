@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('year_id')->constrained('years')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 

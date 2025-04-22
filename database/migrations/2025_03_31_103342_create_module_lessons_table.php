@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('data')->nullable();
             $table->json('activity')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // Adds 'deleted_at' column
         });
     }
 
