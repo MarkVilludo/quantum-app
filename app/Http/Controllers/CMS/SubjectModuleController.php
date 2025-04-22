@@ -13,10 +13,9 @@ class SubjectModuleController extends Controller
     //
     public function index(Request $request)
     {
-        $query = SubjectModule::with(['subject' => function ($query) {
+        $query = SubjectModule::whereHas('subject', function ($query) {
             $query->where('year_id', auth()->user()->year_id);
-        }]);
-        $query->with('subject.year');
+        })->with(['subject.year']);
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');

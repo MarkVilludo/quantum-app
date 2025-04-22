@@ -93,7 +93,7 @@ const deleteModule = (moduleId) => {
                             <tr v-for="module in modules.data" :key="module.id">
                                 <td class="border px-4 py-2">{{ module.name }}</td>
                                 <td class="border px-4 py-2">{{ module.subject.name }}</td>
-                                <td class="border px-4 py-2">{{ module.subject.year.name }}</td>
+                                <td class="border px-4 py-2">{{ module?.subject?.year?.name }}</td>
                                 <td class="border px-4 py-2 text-center">
                                     <a :href="route('subject-modules.edit', module.id)" class="text-yellow-500">Edit</a>
                                     <button @click="deleteModule(module.id)" class="text-red-500 ml-4">Delete</button>
