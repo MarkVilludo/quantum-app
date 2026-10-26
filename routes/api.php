@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\YearController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\SubjectModuleController;
 use App\Http\Controllers\Api\ModuleLessonController;
+use App\Http\Controllers\Api\LessonQuizController;
 use App\Http\Controllers\Api\LessonQuizResultController;
 
 /*
@@ -34,6 +35,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::get('/years', [YearController::class, 'index']);
 Route::get('/subjects/{year}', [SubjectController::class, 'index']);
 Route::get('/module-lessons/{moduleId}', [ModuleLessonController::class, 'show']);
+Route::get('/lesson-quizzes/{lessonId}', [LessonQuizController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);

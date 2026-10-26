@@ -46,6 +46,10 @@ class SubjectModuleController extends Controller
             }
         }
 
-        return $modules;
+        return response()->json([
+            'success' => true,
+            'message' => 'Subject modules retrieved successfully.',
+            'data' => $modules,
+        ], Response::HTTP_OK);
     }
 }
