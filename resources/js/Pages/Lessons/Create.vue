@@ -20,13 +20,13 @@ const newLesson = useForm({
     subject_id: null,
     module_id: null,
     name: "",
-    datax: [{ content: "" }], // Ensure this is an array
+    datax: [{ title: "", content: "" }],
     activity: [{ title: "", question: "", difficulty: "", correct_answer: "" }]
 });
 
 const addContentSection = () => {
     if (newLesson.datax) {
-        newLesson.datax.push({ content: "" });
+        newLesson.datax.push({ title: "", content: "" });
     } else {
         console.error("newLesson.datax is not an array");
     }
@@ -157,7 +157,8 @@ const goBack = () => {
 
                         <h1 class="text-xl font-semibold">Contents:</h1>
                         <div v-for="(section, index) in newLesson.datax" :key="index" class="mb-2 p-2 border rounded">
-                            <textarea v-model="section.content" placeholder="Content" class="border p-2 rounded w-full mb-1" required></textarea>
+                            <input v-model="section.title" placeholder="Slide title (optional — shown in app)" class="border p-2 rounded w-full mb-1" />
+                            <textarea v-model="section.content" placeholder="Content (use **bold** and `code` for emphasis in the app)" class="border p-2 rounded w-full mb-1" required></textarea>
                             <button type="button" @click="removeContentSection(index)" class="bg-red-500 text-white px-3 py-1 rounded" v-if="newLesson.datax.length > 1">
                                 Remove
                             </button>

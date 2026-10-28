@@ -3,26 +3,31 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Year;
+use App\Services\LessonProgressService;
 use Illuminate\Http\Response;
 
 class YearController extends Controller
 {
-    protected $year;
-
-    public function __construct(Year $year) {
-        $this->year = $year;
-    }
-
     public function index()
     {
-        $years = $this->year->all();
+        $years = Year::query()->orderBy('id')->get();
 
         return response()->json([
             'success' => true,
             'message' => 'Years retrieved successfully.',
-            'data' => $years
+            'data' => $years,
+        ], Response::HTTP_OK);
+    }
+
+    public function galaxy(LessonProgressService $progress)
+    {
+        $userId = auth()->id();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Learning galaxy years retrieved successfully.',
+            'data' => $progress->galaxyYearsForUser($userId),
         ], Response::HTTP_OK);
     }
 }

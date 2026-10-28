@@ -5,16 +5,28 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Lesson;
+use App\Services\LessonSlidePresenter;
 use Illuminate\Http\Response;
 
 class ModuleLessonController extends Controller
 {
+    public function __construct(private LessonSlidePresenter $slidePresenter)
+    {
+    }
+
     public function show($moduleId)
     {
         $moduleLessons = Lesson::where('module_id', $moduleId)
             ->with('quizzes')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(function (Lesson $lesson) {
+                $slides = $this->slidePresenter->normalizeSlides($lesson->data, $lesson->name);
+                $lesson->setAttribute('data', $slides);
+                $lesson->setAttribute('slide_count', count($slides));
+
+                return $lesson;
+            });
 
         if ($moduleLessons->isEmpty()) {
             return response()->json([

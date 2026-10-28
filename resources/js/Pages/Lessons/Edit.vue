@@ -30,7 +30,7 @@ const editLesson = useForm({
 });
 
 const addContentSection = () => {
-    editLesson.datax.push({ content: "" });
+    editLesson.datax.push({ title: "", content: "" });
 };
 
 const removeContentSection = (index) => {
@@ -159,7 +159,8 @@ const selectedModuleName = computed(() => {
 
                         <h1 class="text-xl font-semibold">Contents:</h1>
                         <div v-for="(section, index) in editLesson.datax" :key="index" class="mb-2 p-2 border rounded">
-                            <textarea v-model="section.content" placeholder="Content" class="border p-2 rounded w-full mb-1" required></textarea>
+                            <input v-model="section.title" placeholder="Slide title (optional — shown in app)" class="border p-2 rounded w-full mb-1" />
+                            <textarea v-model="section.content" placeholder="Content (use **bold** and `code` in the app)" class="border p-2 rounded w-full mb-1" required></textarea>
                             <button type="button" @click="removeContentSection(index)" class="bg-red-500 text-white px-3 py-1 rounded" v-if="editLesson.datax.length > 1">
                                 Remove
                             </button>

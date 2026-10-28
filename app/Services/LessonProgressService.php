@@ -9,10 +9,14 @@ use App\Models\Quiz;
 use App\Models\Subject;
 use App\Models\SubjectModule;
 use App\Models\SubjectQuizResult;
+use App\Models\Year;
 use Illuminate\Support\Collection;
 
 class LessonProgressService
 {
+    public function __construct(private LessonSlidePresenter $slidePresenter)
+    {
+    }
     public function isLessonCompleted(int $userId, int $lessonId): bool
     {
         return LessonCompletion::where('user_id', $userId)
@@ -125,6 +129,64 @@ class LessonProgressService
         return $modules->isNotEmpty();
     }
 
+    /** @return Collection<int, Year> */
+    public function orderedYears(): Collection
+    {
+        return Year::query()->orderBy('id')->get();
+    }
+
+    public function isYearCompleted(int $userId, int $yearId): bool
+    {
+        $subjects = Subject::where('year_id', $yearId)->orderBy('id')->get();
+        if ($subjects->isEmpty()) {
+            return false;
+        }
+
+        foreach ($subjects as $subject) {
+            if (!$this->isSubjectModulesCompleted($userId, $subject->id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function isYearUnlocked(int $userId, int $yearId): bool
+    {
+        $years = $this->orderedYears();
+        if ($years->isEmpty()) {
+            return false;
+        }
+
+        $firstYearId = (int) $years->first()->id;
+        if ((int) $yearId === $firstYearId) {
+            return true;
+        }
+
+        $previousYearId = null;
+        foreach ($years as $year) {
+            if ((int) $year->id === (int) $yearId) {
+                return $previousYearId !== null && $this->isYearCompleted($userId, $previousYearId);
+            }
+            $previousYearId = (int) $year->id;
+        }
+
+        return false;
+    }
+
+    public function galaxyYearsForUser(int $userId): array
+    {
+        return $this->orderedYears()->map(function (Year $year) use ($userId) {
+            return [
+                'id' => $year->id,
+                'name' => $year->name,
+                'description' => '',
+                'is_unlocked' => $this->isYearUnlocked($userId, $year->id),
+                'is_completed' => $this->isYearCompleted($userId, $year->id),
+            ];
+        })->values()->all();
+    }
+
     public function isFinalSubjectQuizUnlocked(int $userId, int $subjectId): bool
     {
         return $this->isSubjectModulesCompleted($userId, $subjectId);
@@ -148,13 +210,16 @@ class LessonProgressService
             $priorDone = $index === 0 || $this->isLessonCompleted($userId, $lessons[$index - 1]->id);
             $canAccess = $moduleUnlocked && $priorDone && !$completed;
 
+            $slides = $this->slidePresenter->normalizeSlides($lesson->data, $lesson->name);
+
             $result[] = [
                 'id' => $lesson->id,
                 'name' => $lesson->name,
                 'module_id' => $lesson->module_id,
                 'subject_id' => $lesson->subject_id,
                 'year_id' => $lesson->year_id,
-                'data' => $lesson->data,
+                'data' => $slides,
+                'slide_count' => count($slides),
                 'activity' => $lesson->activity,
                 'is_completed' => $completed,
                 'is_unlocked' => $canAccess,
