@@ -20,26 +20,27 @@ defineProps({
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">Profile</h1>
+                <p class="text-sm text-gray-500">Account details and security</p>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                    <UpdateProfileInformationForm
-                        :must-verify-email="mustVerifyEmail"
-                        :status="status"
-                        class="max-w-xl"
-                    />
-                </div>
+        <div class="space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <UpdateProfileInformationForm
+                    :must-verify-email="mustVerifyEmail"
+                    :status="status"
+                    class="max-w-xl"
+                />
+            </div>
 
-                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                    <UpdatePasswordForm class="max-w-xl" />
-                </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <UpdatePasswordForm class="max-w-xl" />
+            </div>
 
-                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                    <DeleteUserForm class="max-w-xl" />
-                </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <DeleteUserForm class="max-w-xl" />
             </div>
         </div>
     </AuthenticatedLayout>

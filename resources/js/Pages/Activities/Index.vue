@@ -52,7 +52,7 @@ const addQuestion = (activity) => {
         <form @submit.prevent="addActivity" class="mb-4 bg-gray-100 p-4 rounded">
             <h3 class="text-lg font-semibold mb-2">Add New Activity</h3>
             <input v-model="newActivity.step" placeholder="Step Number" type="number" class="border p-2 rounded w-full mb-2" required />
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Add Activity</button>
+            <button type="submit" class="qr-btn-primary w-full">Add Activity</button>
         </form>
 
         <!-- List Activities and their Questions -->

@@ -53,7 +53,7 @@ const deleteQuiz = (id) => {
                         <h3 class="text-lg font-semibold text-gray-700">
                             Quiz List ({{ quizzes.meta?.total ?? quizzes.data.length }} / 15)
                         </h3>
-                        <a :href="route('lesson-quizzes.create', { lesson: props.lesson.id })" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        <a :href="route('lesson-quizzes.create', { lesson: props.lesson.id })" class="qr-btn-primary">
                             + Add Quiz
                         </a>
                     </div>
@@ -84,7 +84,7 @@ const deleteQuiz = (id) => {
                                     v-html="link.label"
                                     :class="[
                                         'px-3 py-1 border rounded',
-                                        link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+                                        link.active ? 'bg-quantum-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
                                     ]"
                                 ></button>
                             </template>

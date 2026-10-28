@@ -22,7 +22,7 @@ const addActivity = () => {
         <!-- Add Activity Form -->
         <form @submit.prevent="addActivity" class="mb-4">
             <input v-model="newActivity.step" placeholder="Activity Step" class="border p-2 rounded w-full mb-2" />
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add Activity</button>
+            <button type="submit" class="qr-btn-primary">Add Activity</button>
         </form>
 
         <!-- List Activities -->

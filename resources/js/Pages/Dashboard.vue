@@ -1,6 +1,10 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+const role = computed(() => usePage().props.auth.user?.role);
 </script>
 
 <template>
@@ -8,14 +12,54 @@ import { Head } from '@inertiajs/vue3';
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">Dashboard</h1>
+                <p class="text-sm text-gray-500">Welcome back, {{ $page.props.auth.user.name }}</p>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">You're logged in, welcome  <strong>{{$page.props.auth.user.name}}!</strong></div>
+        <div class="px-4 py-6 sm:px-6 lg:px-8">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-xl border border-quantum-stroke/30 bg-white p-6 shadow-sm">
+                    <p class="text-sm font-medium text-gray-500">Signed in as</p>
+                    <p class="mt-1 text-xl font-semibold capitalize text-gray-900">{{ role }}</p>
                 </div>
+
+                <Link
+                    v-if="role === 'teacher'"
+                    :href="route('lessons.index')"
+                    class="rounded-xl border border-quantum-accent/30 bg-gradient-to-br from-quantum-bg-mid to-quantum-surface p-6 text-white shadow-sm transition hover:border-quantum-accent/60"
+                >
+                    <p class="text-sm font-medium text-quantum-accent">Quick action</p>
+                    <p class="mt-1 text-lg font-semibold">Manage module lessons</p>
+                </Link>
+
+                <Link
+                    v-if="role === 'admin'"
+                    :href="route('users.index')"
+                    class="rounded-xl border border-quantum-accent/30 bg-gradient-to-br from-quantum-bg-mid to-quantum-surface p-6 text-white shadow-sm transition hover:border-quantum-accent/60"
+                >
+                    <p class="text-sm font-medium text-quantum-accent">Quick action</p>
+                    <p class="mt-1 text-lg font-semibold">Manage users</p>
+                </Link>
+
+                <Link
+                    v-if="role === 'student'"
+                    :href="route('student-quiz-results.index')"
+                    class="rounded-xl border border-quantum-accent/30 bg-gradient-to-br from-quantum-bg-mid to-quantum-surface p-6 text-white shadow-sm transition hover:border-quantum-accent/60"
+                >
+                    <p class="text-sm font-medium text-quantum-accent">Quick action</p>
+                    <p class="mt-1 text-lg font-semibold">View my quiz results</p>
+                </Link>
+
+                <Link
+                    v-if="role === 'teacher' || role === 'admin'"
+                    :href="route('quiz-results.index')"
+                    class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-quantum-primary/30 hover:bg-slate-50"
+                >
+                    <p class="text-sm font-medium text-gray-500">Reports</p>
+                    <p class="mt-1 text-lg font-semibold text-quantum-primary">Student quiz results</p>
+                </Link>
             </div>
         </div>
     </AuthenticatedLayout>

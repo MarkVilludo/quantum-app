@@ -2,6 +2,8 @@
 import { ref, watch } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import PageContainer from '@/Components/PageContainer.vue';
+import PaginationBar from '@/Components/PaginationBar.vue';
 import { Head } from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -20,15 +22,10 @@ watch(searchQuery, () => {
     });
 });
 
-// Delete user functionality
 const deleteUser = (userId) => {
     if (confirm('Are you sure you want to delete this user?')) {
         const form = useForm({});
-        form.delete(route('users.destroy', userId), {
-            onSuccess: () => {
-                alert('User deleted successfully!');
-            },
-        });
+        form.delete(route('users.destroy', userId));
     }
 };
 
@@ -39,76 +36,55 @@ const deleteUser = (userId) => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Users</h2>
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">Users</h1>
+                <p class="text-sm text-gray-500">Admins, teachers, and students</p>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              
-                    <div class="p-6">
-                        <div class="mb-4 flex gap-6">
-                            <input
-                                v-model="searchQuery"
-                                type="text"
-                                placeholder="Search users..."
-                                class="border rounded p-2"
-                            />
-                            <a :href="route('users.create')" class="bg-blue-500 text-white px-4 py-2 rounded inline-block">Create New User</a>
-                        </div>
+        <PageContainer>
+            <template #toolbar>
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    placeholder="Search users…"
+                    class="qr-input min-w-[200px] flex-1"
+                />
+                <a :href="route('users.create')" class="qr-btn-primary shrink-0">Create user</a>
+            </template>
 
-                        <table class="w-full border-collapse border border-gray-300">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="px-4 py-2 border">Name</th>
-                                    <th class="px-4 py-2 border">Email</th>
-                                    <th class="px-4 py-2 border">Role</th>
-                                    <th class="px-4 py-2 border">Year / Year Handled for Teacher</th>
-                                    <th class="px-4 py-2 border">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="user in users.data" :key="user.id">
-                                    <td class="px-4 py-2 border">{{ user.name }}</td>
-                                    <td class="px-4 py-2 border">{{ user.email }}</td>
-                                    <td class="px-4 py-2 border capitalize">{{ user.role }}</td>
-                                    <td class="px-4 py-2 border capitalize">{{ user.year?.name }}</td>
-                                    <td class="px-4 py-2 border capitalize">
-                                        <a :href="route('users.edit', user.id)" class="text-blue-500 hover:text-blue-700">Edit</a>
-                                        <!-- Delete Button -->
-                                        <button 
-                                            type="button"
-                                            @click="deleteUser(user.id)"
-                                            class="ml-2 text-red-500 hover:text-red-700">
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="mt-4 flex justify-between items-center">
-                            <button
-                                @click="router.get(route('users.index', { page: users.current_page - 1 }))"
-                                :disabled="users.current_page === 1"
-                                class="bg-gray-200 px-4 py-2 rounded"
-                            >
-                                Previous
-                            </button>
-
-                            <span>Page {{ users.current_page }} of {{ users.last_page }}</span>
-
-                            <button
-                                @click="router.get(route('users.index', { page: users.current_page + 1 }))"
-                                :disabled="users.current_page === users.last_page"
-                                class="bg-gray-200 px-4 py-2 rounded"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="qr-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Year / year handled</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users.data" :key="user.id">
+                            <td class="font-medium text-gray-900">{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td class="capitalize">{{ user.role }}</td>
+                            <td class="capitalize">{{ user.year?.name ?? '—' }}</td>
+                            <td class="text-center">
+                                <a :href="route('users.edit', user.id)" class="qr-btn-warning">Edit</a>
+                                <button type="button" @click="deleteUser(user.id)" class="qr-btn-danger ml-3">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
+
+            <PaginationBar
+                :current-page="users.current_page"
+                :last-page="users.last_page"
+                @previous="router.get(route('users.index', { page: users.current_page - 1, search: searchQuery }))"
+                @next="router.get(route('users.index', { page: users.current_page + 1, search: searchQuery }))"
+            />
+        </PageContainer>
     </AuthenticatedLayout>
 </template>

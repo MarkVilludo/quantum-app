@@ -86,7 +86,7 @@ const goBack = () => {
                                 id="year_id"
                                 v-model="form.year_id"
                                 required
-                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-cyan-200"
                             >
                                 <option disabled value="">Select year level</option>
                                 <option :value="1">1st Year</option>
@@ -102,7 +102,7 @@ const goBack = () => {
                                 id="year_id"
                                 v-model="form.year_id"
                                 required
-                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                                class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-cyan-200"
                             >
                                 <option disabled value="">Select year level</option>
                                 <option :value="1">1st Year</option>
@@ -114,7 +114,7 @@ const goBack = () => {
 
 
                         <div class="flex items-center justify-between gap-4">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded" :disabled="form.processing">
+                            <button type="submit" class="qr-btn-primary" :disabled="form.processing">
                                 Update User
                             </button>
 

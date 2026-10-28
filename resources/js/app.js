@@ -1,5 +1,6 @@
 import './bootstrap';
 import '../css/app.css';
+import 'flowbite';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -18,6 +19,6 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#4B5563',
+        color: '#6366F1',
     },
 });

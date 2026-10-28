@@ -86,7 +86,7 @@ const goBack = () => {
                         <div class="flex items-center gap-6 mt-6">
 
                             <button type="submit"
-                                    class="px-4 py-2 text-white bg-blue-500 hover:bg-green-600 rounded">
+                                    class="qr-btn-primary">
                                 Save Quiz
                             </button>
                             <button type="button" @click="goBack" class="bg-gray-500 text-white px-4 py-2 rounded">

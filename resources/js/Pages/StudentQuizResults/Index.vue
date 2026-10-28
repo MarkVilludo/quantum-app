@@ -2,6 +2,8 @@
 import { router } from "@inertiajs/vue3";
 import { ref, watch, computed } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PageContainer from '@/Components/PageContainer.vue';
+import PaginationBar from '@/Components/PaginationBar.vue';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -51,102 +53,96 @@ watch([searchQuery, userFilter, yearFilter, subjectFilter, moduleFilter, quizTyp
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Student Quiz Results</h2>
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">Student quiz results</h1>
+                <p class="text-sm text-gray-500">Module and final quiz scores from the mobile app</p>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-12">
-                <div class="p-6 bg-white rounded-lg shadow">
-                    <p class="text-sm text-gray-600 mb-4">
-                        Module and final subject quiz scores from the mobile app appear here automatically.
-                    </p>
+        <PageContainer>
+            <template #toolbar>
+                <div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    placeholder="Search student, subject, module…"
+                    class="qr-input md:col-span-2 lg:col-span-3"
+                />
 
-                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Search student, subject, module…"
-                            class="border rounded p-2 w-full"
-                        />
-
-                        <select v-model="userFilter" class="border rounded p-2 w-full">
+                <select v-model="userFilter" class="qr-select w-full">
                             <option value="">All students</option>
                             <option v-for="student in filterOptions.students" :key="student.id" :value="String(student.id)">
                                 {{ student.name }}
                             </option>
                         </select>
 
-                        <select v-if="isAdmin" v-model="yearFilter" class="border rounded p-2 w-full">
+                <select v-if="isAdmin" v-model="yearFilter" class="qr-select w-full">
                             <option value="">All year levels</option>
                             <option v-for="year in filterOptions.years" :key="year.id" :value="String(year.id)">
                                 {{ year.name }}
                             </option>
                         </select>
 
-                        <select v-model="subjectFilter" class="border rounded p-2 w-full">
+                <select v-model="subjectFilter" class="qr-select w-full">
                             <option value="">All subjects</option>
                             <option v-for="subject in filterOptions.subjects" :key="subject.id" :value="String(subject.id)">
                                 {{ subject.name }}
                             </option>
                         </select>
 
-                        <select v-model="moduleFilter" class="border rounded p-2 w-full">
+                <select v-model="moduleFilter" class="qr-select w-full">
                             <option value="">All modules</option>
                             <option v-for="mod in filterOptions.modules" :key="mod.id" :value="String(mod.id)">
                                 {{ mod.name }}
                             </option>
                         </select>
 
-                        <select v-model="quizTypeFilter" class="border rounded p-2 w-full">
-                            <option value="">All quiz types</option>
-                            <option value="module">Module quiz</option>
-                            <option value="subject_final">Final subject quiz</option>
-                            <option value="lesson_legacy">Lesson quiz (legacy)</option>
-                        </select>
-                    </div>
+                <select v-model="quizTypeFilter" class="qr-select w-full">
+                    <option value="">All quiz types</option>
+                    <option value="module">Module quiz</option>
+                    <option value="subject_final">Final subject quiz</option>
+                    <option value="lesson_legacy">Lesson quiz (legacy)</option>
+                </select>
+                </div>
+            </template>
 
-                    <table class="w-full border-collapse border border-gray-300 text-sm">
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="qr-table text-sm">
                         <thead>
-                            <tr class="bg-gray-200">
-                                <th class="border px-3 py-2 text-left">Student</th>
-                                <th class="border px-3 py-2 text-left">Year level</th>
-                                <th class="border px-3 py-2 text-left">Subject</th>
-                                <th class="border px-3 py-2 text-left">Module / quiz</th>
-                                <th class="border px-3 py-2 text-left">Type</th>
-                                <th class="border px-3 py-2 text-center">Score</th>
-                                <th class="border px-3 py-2 text-center">Status</th>
-                                <th class="border px-3 py-2 text-left">Details</th>
+                            <tr>
+                                <th>Student</th>
+                                <th>Year level</th>
+                                <th>Subject</th>
+                                <th>Module / quiz</th>
+                                <th>Type</th>
+                                <th class="text-center">Score</th>
+                                <th class="text-center">Status</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="!results.data.length">
-                                <td colspan="8" class="border px-4 py-6 text-center text-gray-500">
+                                <td colspan="8" class="py-8 text-center text-gray-500">
                                     No quiz results match your filters yet.
                                 </td>
                             </tr>
                             <tr v-for="result in results.data" :key="result.id">
-                                <td class="border px-3 py-2">{{ result.user.name }}</td>
-                                <td class="border px-3 py-2">{{ result.year_name }}</td>
-                                <td class="border px-3 py-2">{{ result.subject_name }}</td>
-                                <td class="border px-3 py-2">{{ result.module_name }}</td>
-                                <td class="border px-3 py-2">{{ result.quiz_type_label }}</td>
-                                <td class="border px-3 py-2 text-center">
+                                <td class="font-medium text-gray-900">{{ result.user.name }}</td>
+                                <td>{{ result.year_name }}</td>
+                                <td>{{ result.subject_name }}</td>
+                                <td>{{ result.module_name }}</td>
+                                <td>{{ result.quiz_type_label }}</td>
+                                <td class="text-center">
                                     {{ result.score }}/{{ result.total }} ({{ result.percent }}%)
                                 </td>
-                                <td class="border px-3 py-2 text-center">
-                                    <span
-                                        v-if="result.passed === true"
-                                        class="text-green-700 font-semibold"
-                                    >Passed</span>
-                                    <span
-                                        v-else-if="result.passed === false"
-                                        class="text-red-600 font-semibold"
-                                    >Not passed</span>
+                                <td class="text-center">
+                                    <span v-if="result.passed === true" class="font-semibold text-green-700">Passed</span>
+                                    <span v-else-if="result.passed === false" class="font-semibold text-red-600">Not passed</span>
                                     <span v-else class="text-gray-500">—</span>
                                 </td>
-                                <td class="border px-3 py-2">
+                                <td>
                                     <details v-if="result.answers && result.answers.length" class="text-xs">
-                                        <summary class="cursor-pointer text-blue-600">View answers</summary>
+                                        <summary class="cursor-pointer text-quantum-primary">View answers</summary>
                                         <div class="mt-2 space-y-2 max-h-48 overflow-y-auto">
                                             <div
                                                 v-for="(answer, index) in result.answers"
@@ -169,28 +165,14 @@ watch([searchQuery, userFilter, yearFilter, subjectFilter, moduleFilter, quizTyp
                             </tr>
                         </tbody>
                     </table>
-
-                    <div class="mt-4 flex justify-between">
-                        <button
-                            @click="goToPage(results.current_page - 1)"
-                            :disabled="results.current_page === 1"
-                            class="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-                        >
-                            Previous
-                        </button>
-
-                        <span class="px-4 py-2">Page {{ results.current_page }} of {{ results.last_page }}</span>
-
-                        <button
-                            @click="goToPage(results.current_page + 1)"
-                            :disabled="results.current_page === results.last_page"
-                            class="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
             </div>
-        </div>
+
+            <PaginationBar
+                :current-page="results.current_page"
+                :last-page="results.last_page"
+                @previous="goToPage(results.current_page - 1)"
+                @next="goToPage(results.current_page + 1)"
+            />
+        </PageContainer>
     </AuthenticatedLayout>
 </template>

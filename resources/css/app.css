@@ -1,3 +1,194 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .qr-input {
+        @apply block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-quantum-accent focus:ring-quantum-accent;
+    }
+
+    .qr-select {
+        @apply block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 shadow-sm focus:border-quantum-accent focus:ring-quantum-accent;
+    }
+
+    .qr-btn-primary {
+        @apply inline-flex items-center justify-center rounded-lg bg-quantum-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-quantum-primary-dark focus:outline-none focus:ring-4 focus:ring-quantum-primary/30 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .qr-btn-secondary {
+        @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-quantum-accent/20 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .qr-btn-danger {
+        @apply text-sm font-medium text-quantum-error hover:text-red-800 hover:underline;
+    }
+
+    .qr-btn-warning {
+        @apply text-sm font-medium text-quantum-warning hover:text-amber-800 hover:underline;
+    }
+
+    .qr-btn-success {
+        @apply text-sm font-medium text-quantum-success hover:text-emerald-800 hover:underline;
+    }
+
+    .qr-table {
+        @apply w-full text-left text-sm text-gray-600;
+    }
+
+    .qr-table thead {
+        @apply bg-slate-50 text-xs uppercase text-gray-700;
+    }
+
+    .qr-table th {
+        @apply px-4 py-3 font-semibold;
+    }
+
+    .qr-table td {
+        @apply border-t border-gray-100 px-4 py-3 align-top;
+    }
+
+    .qr-table tbody tr {
+        @apply bg-white hover:bg-slate-50;
+    }
+
+    .qr-alert-success {
+        @apply mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800;
+    }
+
+    .qr-form-label {
+        @apply mb-2 block text-sm font-medium text-gray-900;
+    }
+
+    .qr-link-accent {
+        @apply text-quantum-primary hover:text-quantum-primary-dark focus:outline-none focus:ring-2 focus:ring-quantum-accent focus:ring-offset-2;
+    }
+}
+
+/* Welcome / marketing animations (respect reduced motion) */
+@keyframes qr-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes qr-orbit-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes qr-progress-fill {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 80%;
+    }
+}
+
+@keyframes qr-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes qr-cta-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+    }
+}
+
+.qr-animate-fade-up {
+    animation: qr-fade-up 0.7s ease-out both;
+}
+
+.qr-animate-float {
+    animation: qr-float 4s ease-in-out infinite;
+}
+
+.qr-animate-float-delay {
+    animation: qr-float 4.5s ease-in-out 0.6s infinite;
+}
+
+.qr-animate-float-slow {
+    animation: qr-float 5.5s ease-in-out 1s infinite;
+}
+
+.qr-animate-progress {
+    animation: qr-progress-fill 1.8s ease-out 0.5s both;
+}
+
+.qr-animate-cta {
+    animation: qr-cta-pulse 2.5s ease-in-out infinite;
+}
+
+.qr-orbit-ring {
+    animation: qr-orbit-spin 24s linear infinite;
+}
+
+.qr-orbit-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 0.5rem;
+    width: 0.5rem;
+    margin: -0.25rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #6366f1, #22d3ee);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.55);
+}
+
+.qr-orbit-dot-a {
+    transform: rotate(0deg) translateX(7rem);
+}
+
+.qr-orbit-dot-b {
+    transform: rotate(120deg) translateX(7rem);
+}
+
+.qr-orbit-dot-c {
+    transform: rotate(240deg) translateX(7rem);
+}
+
+@media (min-width: 640px) {
+    .qr-orbit-dot-a {
+        transform: rotate(0deg) translateX(8rem);
+    }
+
+    .qr-orbit-dot-b {
+        transform: rotate(120deg) translateX(8rem);
+    }
+
+    .qr-orbit-dot-c {
+        transform: rotate(240deg) translateX(8rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .qr-animate-fade-up,
+    .qr-animate-float,
+    .qr-animate-float-delay,
+    .qr-animate-float-slow,
+    .qr-animate-progress,
+    .qr-animate-cta,
+    .qr-orbit-ring {
+        animation: none !important;
+    }
+
+    .qr-animate-progress {
+        width: 80%;
+    }
+}

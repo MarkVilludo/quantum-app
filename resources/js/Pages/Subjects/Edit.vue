@@ -88,7 +88,7 @@ const goBack = () => {
 
                         <!-- Submit Button -->
                         <div class="flex items-center justify-between gap-4">
-                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">
+                            <button type="submit" class="qr-btn-primary">
                                 Update Subject
                             </button>
 

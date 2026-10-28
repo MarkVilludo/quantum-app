@@ -190,7 +190,7 @@ const selectedModuleName = computed(() => {
                         </button>
 
                         <div class="flex items-center gap-2 mt-4">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded ml-2">
+                            <button type="submit" class="qr-btn-primary ml-2">
                                 Update Lesson
                             </button>
                             <button @click="goBack" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">

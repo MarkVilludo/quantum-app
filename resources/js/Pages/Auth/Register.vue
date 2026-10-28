@@ -25,6 +25,8 @@ const submit = () => {
     <GuestLayout>
         <Head title="Register" />
 
+        <h2 class="mb-6 text-xl font-semibold text-gray-900">Create account</h2>
+
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Name" />
@@ -63,7 +65,7 @@ const submit = () => {
                     id="year_id"
                     v-model="form.year_id"
                     required
-                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200"
+                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-cyan-200"
                 >
                     <option disabled value="">Select year level</option>
                     <option :value="1">1st Year</option>
@@ -106,7 +108,7 @@ const submit = () => {
             <div class="flex items-center justify-end mt-4">
                 <Link
                     :href="route('login')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-quantum-accent"
                 >
                     Already registered?
                 </Link>
