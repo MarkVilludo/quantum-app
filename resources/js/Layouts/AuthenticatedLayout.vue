@@ -55,15 +55,15 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
                             </div>
 
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" v-if="$page.props.auth.user.role === 'teacher'">
+                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" v-if="$page.props.auth.user.role === 'teacher' || $page.props.auth.user.role === 'admin'">
                                 <NavLink :href="route('quiz-results.index')" :active="route().current('quiz-results.index')">
-                                    Student Lesson Quiz Results
+                                    Student Quiz Results
                                 </NavLink>
                             </div>
 
                              <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" v-if="$page.props.auth.user.role === 'student'">
                                 <NavLink :href="route('student-quiz-results.index')" :active="route().current('student-quiz-results.index')">
-                                    Lesson Quiz Results
+                                    My Quiz Results
                                 </NavLink>
                             </div>
 

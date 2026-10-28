@@ -44,8 +44,15 @@ const deleteQuiz = (id) => {
                 </div>
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-sm text-gray-600 mb-4">
+                        Each lesson should have <strong>15</strong> multiple-choice questions (A–D).
+                        Set the correct answer to <strong>Answer A</strong> (<code>answer1</code>) for app scoring.
+                        The module quiz uses the first 15 questions across this module’s lessons.
+                    </p>
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold text-gray-700">Quiz List</h3>
+                        <h3 class="text-lg font-semibold text-gray-700">
+                            Quiz List ({{ quizzes.meta?.total ?? quizzes.data.length }} / 15)
+                        </h3>
                         <a :href="route('lesson-quizzes.create', { lesson: props.lesson.id })" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                             + Add Quiz
                         </a>

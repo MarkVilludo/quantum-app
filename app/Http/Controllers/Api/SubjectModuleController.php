@@ -3,53 +3,48 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\SubjectModule;
+use App\Services\LessonProgressService;
 use Illuminate\Http\Request;
-use App\Models\{SubjectModule, LessonQuizResult};
 use Illuminate\Http\Response;
-use App\Http\Resources\ModuleResource;
 
 class SubjectModuleController extends Controller
 {
+    public function __construct(private LessonProgressService $progress)
+    {
+    }
+
     public function show(Request $request, $subjectId)
     {
         $userId = auth()->id();
 
-        $modules = SubjectModule::with(['lessons' => function ($query) {
-            $query->orderBy('id'); // You may adjust to created_at if needed
-        }])
-            ->where('subject_id', $subjectId)
-            ->get();
+        $modules = SubjectModule::where('subject_id', $subjectId)->orderBy('id')->get();
 
         $previousModuleCompleted = true;
+        $payload = [];
 
         foreach ($modules as $index => $module) {
-            // Unlock if first module or previous module completed
-            $module->is_unlocked = $index === 0 || $previousModuleCompleted;
+            $isUnlocked = $index === 0 || $previousModuleCompleted;
+            $lessonsComplete = $this->progress->areModuleLessonsComplete($userId, $module);
+            $isCompleted = $this->progress->isModuleCompleted($userId, $module);
 
-            $lessons = $module->lessons;
+            $payload[] = [
+                'id' => $module->id,
+                'name' => $module->name,
+                'subject_id' => $module->subject_id,
+                'is_unlocked' => $isUnlocked,
+                'is_completed' => $isCompleted,
+                'lessons_complete' => $lessonsComplete,
+                'module_quiz_ready' => $lessonsComplete && !$this->progress->hasPassedModuleQuiz($userId, $module->id),
+            ];
 
-            // Reset flag
-            $previousModuleCompleted = false;
-
-            if ($lessons->count()) {
-                $lastLesson = $lessons->last();
-
-                // Check if user finished last lesson of this module
-                $previousModuleCompleted = LessonQuizResult::where('user_id', $userId)
-                    ->where('lesson_id', $lastLesson->id)
-                    ->exists();
-            }
-
-            // You can also add `is_unlocked` on each lesson if needed
-            foreach ($lessons as $lessonIndex => $lesson) {
-                $lesson->is_unlocked = $module->is_unlocked && ($lessonIndex === 0 || LessonQuizResult::where('user_id', $userId)->where('lesson_id', $lessons[$lessonIndex - 1]->id)->exists());
-            }
+            $previousModuleCompleted = $isCompleted;
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Subject modules retrieved successfully.',
-            'data' => $modules,
+            'data' => $payload,
         ], Response::HTTP_OK);
     }
 }

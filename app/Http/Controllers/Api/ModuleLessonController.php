@@ -11,7 +11,10 @@ class ModuleLessonController extends Controller
 {
     public function show($moduleId)
     {
-        $moduleLessons = Lesson::where('module_id', $moduleId)->with('quizzes')->get();
+        $moduleLessons = Lesson::where('module_id', $moduleId)
+            ->with('quizzes')
+            ->orderBy('id')
+            ->get();
 
         if ($moduleLessons->isEmpty()) {
             return response()->json([

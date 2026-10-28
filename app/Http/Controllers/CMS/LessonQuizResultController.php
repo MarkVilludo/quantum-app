@@ -3,82 +3,38 @@
 namespace App\Http\Controllers\CMS;
 
 use App\Http\Controllers\Controller;
+use App\Services\CmsStudentQuizResultsService;
 use Illuminate\Http\Request;
-use App\Models\LessonQuizResult;
-use App\Models\Quiz;
-use App\Models\User;
+use Illuminate\Http\Response;
 use Inertia\Inertia;
 
 class LessonQuizResultController extends Controller
 {
+    public function __construct(private CmsStudentQuizResultsService $quizResults)
+    {
+    }
+
     public function index(Request $request)
     {
-        // Build the query with lesson and user relationships
-        $query = LessonQuizResult::with(['user', 'lesson.quizzes']);
-        $query->with(['lesson' => function ($query) {
-            $query->where('year_id', auth()->user()->year_id);
-        }]);
+        $viewer = auth()->user();
 
-        // Filter by lesson name
-        if ($request->search) {
-            $query->whereHas('lesson', function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%");
-            });
+        if (!in_array($viewer->role, ['admin', 'teacher'], true)) {
+            abort(Response::HTTP_FORBIDDEN, 'Only instructors and administrators can view student quiz results.');
         }
 
-        // Filter by user_id
-        if ($request->user_id) {
-            $query->where('user_id', $request->user_id);
+        $filters = $request->only(['search', 'user_id', 'year_id', 'subject_id', 'module_id', 'quiz_type']);
+        if ($viewer->role === 'teacher' && $viewer->year_id) {
+            $filters['year_id'] = (string) $viewer->year_id;
         }
 
-        // Paginate results
-        $results = $query->latest()->paginate(10)->withQueryString();
-
-        // Transform results with detailed answers
-        $results->getCollection()->transform(function ($result) {
-            $detailedAnswers = collect($result->answers)->map(function ($answer) {
-                $questionDetail = Quiz::find($answer['quiz_id']);
-                return [
-                    'quiz_id'    => $answer['quiz_id'],
-                    'question'   => $questionDetail?->question ?? 'Unknown question',
-                    'selected'   => $answer['selected'],
-                    'correct'    => $questionDetail?->correct ?? 'N/A',
-                    'is_correct' => $answer['selected'] === ($questionDetail->correct ?? null),
-                ];
-            });
-
-            return [
-                'id'      => $result->id,
-                'score'   => $result->score,
-                'total'   => $result->total,
-                'user'    => [
-                    'id'   => $result->user->id,
-                    'name' => $result->user->name,
-                ],
-                'lesson'  => [
-                    'id'    => $result->lesson?->id,
-                    'title' => $result->lesson?->name,
-                ],
-                'answers' => $detailedAnswers,
-            ];
-        });
-
-        // Only get users who have results in the filtered lesson
-        $filteredUserIds = LessonQuizResult::query()
-            ->when($request->search, function ($q) use ($request) {
-                $q->whereHas('lesson', function ($sub) use ($request) {
-                    $sub->where('name', 'like', "%{$request->search}%");
-                });
-            })
-            ->pluck('user_id')
-            ->unique();
-
-        $users = User::whereIn('id', $filteredUserIds)->select('id', 'name')->get();
+        $results = $this->quizResults->paginate($request, $viewer);
+        $filterOptions = $this->quizResults->filterOptions($viewer, $filters);
 
         return Inertia::render('StudentQuizResults/Index', [
             'results' => $results,
-            'users'   => $users,
-            'filters' => $request->only('search', 'user_id'),
+            'filters' => $filters,
+            'filterOptions' => $filterOptions,
+            'viewerRole' => $viewer->role,
         ]);
     }
 }

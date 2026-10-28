@@ -10,6 +10,12 @@ use App\Http\Controllers\Api\SubjectModuleController;
 use App\Http\Controllers\Api\ModuleLessonController;
 use App\Http\Controllers\Api\LessonQuizController;
 use App\Http\Controllers\Api\LessonQuizResultController;
+use App\Http\Controllers\Api\ModuleProgressController;
+use App\Http\Controllers\Api\LessonActivityController;
+use App\Http\Controllers\Api\SubjectProgressController;
+use App\Http\Controllers\Api\SubjectFinalQuizController;
+use App\Http\Controllers\Api\ModuleQuizController;
+use App\Http\Controllers\Api\StudentProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +45,16 @@ Route::get('/lesson-quizzes/{lessonId}', [LessonQuizController::class, 'index'])
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);
+    Route::get('/subject-progress/{subjectId}', [SubjectProgressController::class, 'show']);
+    Route::get('/module-progress/{moduleId}', [ModuleProgressController::class, 'show']);
+    Route::get('/module-quiz/{moduleId}', [ModuleQuizController::class, 'show']);
+    Route::post('/module-quiz/{moduleId}/submit', [ModuleQuizController::class, 'submit']);
+    Route::post('/lesson-activities/novice', [LessonActivityController::class, 'submitNovice']);
+    Route::post('/lesson-activities/quiz', [LessonActivityController::class, 'submitQuizMode']);
+    Route::get('/subject-final-quiz/{subjectId}', [SubjectFinalQuizController::class, 'show']);
+    Route::post('/subject-final-quiz/{subjectId}/submit', [SubjectFinalQuizController::class, 'submit']);
 
     Route::post('/lesson-quizzes/submit', [LessonQuizResultController::class, 'store']);
     Route::get('/lesson-quizzes/result/{lessonId}', [LessonQuizResultController::class, 'show']);
+    Route::get('/student-profile', [StudentProfileController::class, 'show']);
 });

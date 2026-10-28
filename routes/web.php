@@ -96,10 +96,8 @@ require __DIR__ . '/auth.php';
 Route::post('/activities/{activity}/questions', [ActivityQuestionController::class, 'store'])
     ->name('activities.questions.store');
 
-Route::get('/quiz-results', [LessonQuizResultController::class, 'index'])->name('quiz-results.index');
-
-
 Route::middleware(['auth'])->group(function () {
+    Route::get('/quiz-results', [LessonQuizResultController::class, 'index'])->name('quiz-results.index');
     //admin user management
     Route::get('/users', [AdminController::class, 'users'])->name('users.index');
     Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
