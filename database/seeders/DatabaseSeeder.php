@@ -16,17 +16,29 @@ class DatabaseSeeder extends Seeder
             YearAndSubjectSeeder::class,
             SubjectModuleSeeder::class,
             ModuleLessonSeeder::class,
+            QuizSeeder::class,
         ]);
 
-        \App\Models\User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
+        $admin = \App\Models\User::withTrashed()->firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => 'password',
+                'role' => 'admin',
+            ]
+        );
 
-        \App\Models\User::factory(3)->create([
-            'role' => 'teacher',
-        ]);
+        if ($admin->trashed()) {
+            $admin->restore();
+        }
+
+        if (\App\Models\User::withTrashed()->where('role', 'teacher')->doesntExist()) {
+            \App\Models\User::factory(3)->create([
+                'role' => 'teacher',
+                'password' => 'password',
+            ]);
+        }
+
+        $this->call(ResetUserPasswordsSeeder::class);
     }
 }

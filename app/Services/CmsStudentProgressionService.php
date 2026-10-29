@@ -29,9 +29,34 @@ class CmsStudentProgressionService
             ],
             'quantum_xp' => $totalXp,
             'rank' => $rank,
-            'rank_ladder' => $ladder,
-            'graduation' => $this->graduation->statusPayloadForUser($user),
+            'rank_ladder' => $this->mobileRankLadder($ladder),
+            'graduation' => $this->safeGraduationPayload($user),
         ];
+    }
+
+    /** @param  array<string, mixed>  $ladder */
+    private function mobileRankLadder(array $ladder): array
+    {
+        unset($ladder['levels']);
+
+        return $ladder;
+    }
+
+    /** @return array<string, mixed> */
+    private function safeGraduationPayload(User $user): array
+    {
+        try {
+            return $this->graduation->statusPayloadForUser($user);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'eligible' => false,
+                'graduated' => false,
+                'student_name' => $user->name,
+                'program_title' => 'Quantum Realm Programming Curriculum',
+            ];
+        }
     }
 
     public function paginateStudents(Request $request, User $viewer): LengthAwarePaginator

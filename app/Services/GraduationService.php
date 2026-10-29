@@ -69,6 +69,15 @@ class GraduationService
         $eligible = $this->isFullyGraduated($user->id);
         $completion = $this->completionForUser($user->id);
 
+        if ($eligible && $completion === null) {
+            try {
+                $this->processAfterFinalQuizPass($user);
+                $completion = $this->completionForUser($user->id);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
         return [
             'eligible' => $eligible,
             'graduated' => $eligible,

@@ -19,6 +19,7 @@ class PasswordResetLinkController extends Controller
     {
         return Inertia::render('Auth/ForgotPassword', [
             'status' => session('status'),
+            'mailDevInboxUrl' => config('app.debug') ? 'http://localhost:8025' : null,
         ]);
     }
 

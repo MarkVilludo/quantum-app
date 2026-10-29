@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -21,7 +22,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
         ]);
 
         return response()->json(['message' => 'User registered successfully!']);
@@ -52,5 +53,26 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                'message' => 'If an account exists for that email, we sent a password reset link. Check your inbox.',
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
     }
 }

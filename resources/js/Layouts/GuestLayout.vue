@@ -20,9 +20,6 @@ import { Link } from '@inertiajs/vue3';
             </div>
             <div class="relative max-w-md">
                 <h1 class="text-3xl font-bold leading-tight">Manage courses, lessons, and quiz results in one place.</h1>
-                <p class="mt-4 text-quantum-secondary">
-                    Same colors as the mobile app—indigo actions, cyan highlights, dark space theme.
-                </p>
             </div>
             <p class="text-sm text-quantum-muted">© Quantum Realm Learning</p>
         </div>

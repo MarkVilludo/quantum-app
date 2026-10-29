@@ -78,12 +78,21 @@ const submit = () => {
                 </label>
             </div>
 
-            <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-quantum-accent" href="/forgot-password"> Forgot your password? </a>
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <div class="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
+                <Link
+                    v-if="canResetPassword"
+                    :href="route('password.request')"
+                    class="text-sm font-medium text-quantum-primary hover:text-quantum-primary-dark focus:outline-none focus:ring-2 focus:ring-quantum-accent focus:ring-offset-2 rounded-sm"
+                >
+                    Forgot your password?
+                </Link>
+                <PrimaryButton
+                    class="w-full sm:w-auto sm:ms-auto"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
                     Log in
                 </PrimaryButton>
-                
             </div>
         </form>
     </GuestLayout>

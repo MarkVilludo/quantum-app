@@ -20,6 +20,20 @@ class StudentProfileController extends Controller
 
     public function show(Request $request)
     {
+        try {
+            return $this->buildProfileResponse($request);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not load profile.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private function buildProfileResponse(Request $request)
+    {
         $user = $request->user();
 
         $moduleResults = ModuleQuizResult::query()
@@ -112,6 +126,9 @@ class StudentProfileController extends Controller
 
         try {
             $dashboard = $this->engagement->dashboard($user->id);
+            if (is_array($dashboard) && isset($dashboard['rank_ladder']['levels'])) {
+                unset($dashboard['rank_ladder']['levels']);
+            }
         } catch (\Throwable $e) {
             report($e);
             $dashboard = null;

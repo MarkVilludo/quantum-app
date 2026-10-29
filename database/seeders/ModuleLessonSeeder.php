@@ -1179,20 +1179,40 @@ class ModuleLessonSeeder extends Seeder
             ],
         ];
 
-        foreach ($lessons as &$lesson) {
-            //update year_id and subjects
-            $subjectModule = DB::table('subject_modules')->where('name', $lesson['name'])->first();
+        foreach ($lessons as $lesson) {
+            $subjectModule = DB::table('subject_modules')->where('id', $lesson['module_id'])->first();
+            if (! $subjectModule) {
+                continue;
+            }
+
             $subject = DB::table('subjects')->where('id', $subjectModule->subject_id)->first();
+            if (! $subject) {
+                continue;
+            }
 
-            $lesson['data'] = json_encode($lesson['data']);
-            $lesson['activity'] = json_encode($lesson['activity']);
-            $lesson['created_at'] = now();
-            $lesson['updated_at'] = now();
+            $now = now();
+            $payload = [
+                'name' => $lesson['name'],
+                'data' => json_encode($lesson['data']),
+                'activity' => json_encode($lesson['activity']),
+                'subject_id' => $subjectModule->subject_id,
+                'year_id' => $subject->year_id,
+                'updated_at' => $now,
+                'deleted_at' => null,
+            ];
 
-            $lesson['subject_id'] = $subjectModule->subject_id;
-            $lesson['year_id'] = $subject->year_id;
+            $existing = DB::table('module_lessons')
+                ->where('module_id', $lesson['module_id'])
+                ->first();
+
+            if ($existing) {
+                DB::table('module_lessons')->where('id', $existing->id)->update($payload);
+            } else {
+                DB::table('module_lessons')->insert($payload + [
+                    'module_id' => $lesson['module_id'],
+                    'created_at' => $now,
+                ]);
+            }
         }
-
-        DB::table('module_lessons')->insert($lessons);
     }
 }

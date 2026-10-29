@@ -29,10 +29,31 @@ class YearAndSubjectSeeder extends Seeder
         ];
 
         foreach ($years as $yearData) {
-            $year = Year::create($yearData);
-            
+            $year = Year::withTrashed()->firstOrCreate(
+                ['name' => $yearData['name']]
+            );
+
+            if ($year->trashed()) {
+                $year->restore();
+            }
+
+            Year::withTrashed()
+                ->where('name', $year->name)
+                ->where('id', '!=', $year->id)
+                ->get()
+                ->each(fn (Year $duplicate) => $duplicate->forceDelete());
+
             foreach ($subjects[$year->name] as $subjectName) {
-                Subject::create(['name' => $subjectName, 'year_id' => $year->id]);
+                $subject = Subject::withTrashed()->firstOrCreate(
+                    [
+                        'name' => $subjectName,
+                        'year_id' => $year->id,
+                    ]
+                );
+
+                if ($subject->trashed()) {
+                    $subject->restore();
+                }
             }
         }
     }

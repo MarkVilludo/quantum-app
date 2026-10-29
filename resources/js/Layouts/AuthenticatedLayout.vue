@@ -1,43 +1,67 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import SidebarNavLink from '@/Components/SidebarNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useAppSidebar } from '@/composables/useAppSidebar';
 
-const sidebarOpen = ref(false);
+const { sidebarOpen, closeSidebar, toggleSidebar } = useAppSidebar();
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const role = computed(() => user.value?.role ?? '');
-
-const closeSidebar = () => {
-    sidebarOpen.value = false;
-};
+const roleLabel = computed(() => {
+    const labels = { admin: 'Administrator', teacher: 'Teacher', student: 'Student' };
+    return labels[role.value] ?? role.value;
+});
 </script>
 
 <template>
     <div class="min-h-screen bg-slate-100 antialiased">
         <!-- Mobile backdrop -->
-        <div
-            v-show="sidebarOpen"
-            class="fixed inset-0 z-30 bg-gray-900/50 lg:hidden"
-            @click="closeSidebar"
-        />
+        <Transition
+            enter-active-class="transition-opacity duration-200 ease-out"
+            enter-from-class="opacity-0"
+            leave-active-class="transition-opacity duration-150 ease-in"
+            leave-to-class="opacity-0"
+        >
+            <button
+                v-show="sidebarOpen"
+                type="button"
+                class="fixed inset-0 z-30 bg-gray-900/60 lg:hidden"
+                aria-label="Close menu"
+                @click="closeSidebar"
+            />
+        </Transition>
 
         <!-- Sidebar -->
         <aside
-            class="fixed top-0 left-0 z-40 h-screen w-64 border-r border-quantum-stroke bg-quantum-bg-mid transition-transform duration-200 lg:translate-x-0"
+            id="app-sidebar"
+            class="fixed top-0 left-0 z-40 flex h-[100dvh] w-72 max-w-[85vw] flex-col border-r border-quantum-stroke bg-quantum-bg-mid shadow-xl transition-transform duration-200 ease-out lg:w-64 lg:max-w-none lg:shadow-none"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
         >
-            <div class="flex h-16 items-center border-b border-quantum-stroke px-4">
-                <Link :href="route('dashboard')" class="flex items-center gap-2" @click="closeSidebar">
+            <div class="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-quantum-stroke px-4">
+                <Link :href="route('dashboard')" class="flex min-w-0 items-center gap-2" @click="closeSidebar">
                     <ApplicationLogo class="h-8 w-8 shrink-0" />
-                    <span class="text-sm font-semibold text-quantum-text-primary">Quantum CMS</span>
+                    <span class="truncate text-sm font-semibold text-quantum-text-primary">Quantum CMS</span>
                 </Link>
+                <button
+                    type="button"
+                    class="inline-flex shrink-0 rounded-lg p-2 text-quantum-secondary hover:bg-quantum-surface hover:text-quantum-text-primary lg:hidden"
+                    aria-label="Close menu"
+                    @click="closeSidebar"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
-            <nav class="space-y-1 p-4">
+            <nav
+                class="flex-1 space-y-1 overflow-y-auto overscroll-contain p-4"
+                aria-label="Main navigation"
+            >
                 <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-quantum-muted">Main</p>
 
                 <SidebarNavLink
@@ -165,35 +189,73 @@ const closeSidebar = () => {
                     </SidebarNavLink>
                 </template>
             </nav>
+
+            <div class="shrink-0 border-t border-quantum-stroke p-4">
+                <div class="mb-3 rounded-lg bg-quantum-surface/80 px-3 py-2.5">
+                    <p class="truncate text-sm font-medium text-quantum-text-primary">{{ user.name }}</p>
+                    <p class="truncate text-xs text-quantum-muted">{{ user.email }}</p>
+                    <p class="mt-1 text-xs text-quantum-accent">{{ roleLabel }}</p>
+                </div>
+                <SidebarNavLink
+                    :href="route('profile.edit')"
+                    :active="route().current('profile.*')"
+                    @click="closeSidebar"
+                >
+                    <template #icon>
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </template>
+                    Profile settings
+                </SidebarNavLink>
+                <Link
+                    :href="route('logout')"
+                    method="post"
+                    as="button"
+                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-quantum-secondary hover:bg-quantum-surface hover:text-quantum-text-primary"
+                    @click="closeSidebar"
+                >
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Log out
+                </Link>
+            </div>
         </aside>
 
         <!-- Main column -->
         <div class="lg:ml-64">
             <header class="sticky top-0 z-20 border-b border-quantum-stroke/20 bg-white/95 backdrop-blur-sm">
-                <div class="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-3">
+                <div class="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+                    <div class="flex min-w-0 flex-1 items-center gap-3">
                         <button
                             type="button"
-                            class="inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 lg:hidden"
-                            @click="sidebarOpen = !sidebarOpen"
+                            class="inline-flex shrink-0 items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 lg:hidden"
+                            aria-controls="app-sidebar"
+                            :aria-expanded="sidebarOpen ? 'true' : 'false'"
+                            @click="toggleSidebar"
                         >
-                            <span class="sr-only">Open sidebar</span>
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <span class="sr-only">{{ sidebarOpen ? 'Close menu' : 'Open menu' }}</span>
+                            <svg v-if="!sidebarOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
+                            <svg v-else class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
-                        <div v-if="$slots.header" class="min-w-0">
+                        <div v-if="$slots.header" class="min-w-0 flex-1">
                             <slot name="header" />
                         </div>
+                        <p v-else class="truncate text-sm font-semibold text-gray-900 lg:hidden">Quantum CMS</p>
                     </div>
 
                     <Dropdown align="right" width="48">
                         <template #trigger>
                             <button
                                 type="button"
-                                class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                class="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                             >
-                                <span class="hidden sm:inline">{{ user.name }}</span>
+                                <span class="hidden sm:inline max-w-[10rem] truncate">{{ user.name }}</span>
                                 <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-quantum-primary/15 text-xs font-semibold text-quantum-primary">
                                     {{ user.name?.charAt(0)?.toUpperCase() }}
                                 </span>
@@ -203,7 +265,7 @@ const closeSidebar = () => {
                             <div class="border-b border-gray-100 px-4 py-2">
                                 <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
                                 <p class="truncate text-xs text-gray-500">{{ user.email }}</p>
-                                <p class="mt-1 text-xs capitalize text-quantum-accent">{{ role }}</p>
+                                <p class="mt-1 text-xs text-quantum-accent">{{ roleLabel }}</p>
                             </div>
                             <DropdownLink :href="route('profile.edit')">Profile</DropdownLink>
                             <DropdownLink :href="route('logout')" method="post" as="button">Log Out</DropdownLink>

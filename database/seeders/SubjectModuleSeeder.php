@@ -76,14 +76,34 @@ class SubjectModuleSeeder extends Seeder
 
         foreach ($modules as $moduleId => [$subjectName, $moduleName]) {
             $subject = Subject::where('name', $subjectName)->first();
-            
-            if ($subject) {
-                SubjectModule::create([
-                    'id' => $moduleId,
+
+            if (! $subject) {
+                continue;
+            }
+
+            $module = SubjectModule::withTrashed()->find($moduleId);
+
+            if ($module) {
+                $module->fill([
                     'name' => $moduleName,
                     'subject_id' => $subject->id,
                 ]);
+
+                if ($module->trashed()) {
+                    $module->restore();
+                } else {
+                    $module->save();
+                }
+
+                continue;
             }
+
+            $module = new SubjectModule([
+                'name' => $moduleName,
+                'subject_id' => $subject->id,
+            ]);
+            $module->id = $moduleId;
+            $module->save();
         }
     }
 }
