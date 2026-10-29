@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Subject;
 use App\Models\SubjectModule;
 use App\Services\LessonProgressService;
 use Illuminate\Http\Request;
@@ -17,6 +18,24 @@ class SubjectModuleController extends Controller
     public function show(Request $request, $subjectId)
     {
         $userId = auth()->id();
+        $subject = Subject::find($subjectId);
+
+        if (!$subject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subject not found.',
+                'data' => [],
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->progress->isYearUnlocked($userId, (int) $subject->year_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->progress->yearUnlockMessage($userId, (int) $subject->year_id)
+                    ?? 'This year level is locked.',
+                'data' => [],
+            ], Response::HTTP_FORBIDDEN);
+        }
 
         $modules = SubjectModule::where('subject_id', $subjectId)->orderBy('id')->get();
 

@@ -28,22 +28,41 @@ class LessonActivityController extends Controller
         ]);
 
         $userId = auth()->id();
+        if ($userId === null) {
+            return response()->json(['success' => false, 'message' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
+        }
+
         $lesson = Lesson::findOrFail($validated['lesson_id']);
-        $this->assertLessonAccessible($userId, $lesson->id, $lesson->module_id);
+        $accessError = $this->lessonAccessErrorResponse($userId, $lesson->id, $lesson->module_id);
+        if ($accessError !== null) {
+            return $accessError;
+        }
 
         $decorated = $this->progress->decorateModuleLessons($userId, $lesson->module_id, true);
         $lessonRow = collect($decorated)->firstWhere('id', $lesson->id);
         if (!$lessonRow) {
             return response()->json(['success' => false, 'message' => 'Lesson not found.'], Response::HTTP_NOT_FOUND);
         }
-        $slide = collect($lessonRow['data'] ?? [])->firstWhere('step', (int) $validated['slide_step']);
+        $slides = collect($lessonRow['data'] ?? []);
+        $step = (int) $validated['slide_step'];
+        $slide = $slides->firstWhere('step', $step);
+        if (! is_array($slide)) {
+            $slide = $slides->values()->get($step - 1);
+        }
+        if (! is_array($slide)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not find this slide for verification.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $check = $slide['micro_check'] ?? null;
 
-        if (!$check) {
+        if (! $check) {
             return response()->json(['success' => true, 'correct' => true], Response::HTTP_OK);
         }
 
-        $correct = trim($validated['selected']) === trim((string) ($check['correct'] ?? ''));
+        $correct = $this->microCheckAnswerMatches($validated['selected'], (string) ($check['correct'] ?? ''));
 
         return response()->json([
             'success' => true,
@@ -186,11 +205,34 @@ class LessonActivityController extends Controller
 
     private function assertLessonAccessible(int $userId, int $lessonId, int $moduleId): void
     {
+        $response = $this->lessonAccessErrorResponse($userId, $lessonId, $moduleId);
+        if ($response !== null) {
+            abort($response->getStatusCode(), $response->getData(true)['message'] ?? 'Forbidden');
+        }
+    }
+
+    private function lessonAccessErrorResponse(int $userId, int $lessonId, int $moduleId): ?\Illuminate\Http\JsonResponse
+    {
         $lessons = $this->progress->decorateModuleLessons($userId, $moduleId, true);
         $target = collect($lessons)->firstWhere('id', $lessonId);
 
-        if (!$target || empty($target['can_access'])) {
-            abort(Response::HTTP_FORBIDDEN, 'This lesson is locked.');
+        if (! $target) {
+            return response()->json(['success' => false, 'message' => 'Lesson not found.'], Response::HTTP_NOT_FOUND);
         }
+
+        $allowed = ! empty($target['can_access']) || ! empty($target['is_completed']);
+        if (! $allowed) {
+            return response()->json(['success' => false, 'message' => 'This lesson is locked.'], Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
+    }
+
+    private function microCheckAnswerMatches(string $selected, string $expected): bool
+    {
+        return strcasecmp(
+            $this->normalizeActivityAnswer($selected),
+            $this->normalizeActivityAnswer($expected)
+        ) === 0;
     }
 }

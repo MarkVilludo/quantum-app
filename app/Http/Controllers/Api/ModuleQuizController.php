@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\Quiz;
+use App\Models\Subject;
 use App\Models\SubjectModule;
 use App\Models\User;
 use App\Services\LessonProgressService;
@@ -31,6 +32,10 @@ class ModuleQuizController extends Controller
 
         if (!$module) {
             return response()->json(['success' => false, 'message' => 'Module not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($blocked = $this->yearLockedResponse($userId, $module)) {
+            return $blocked;
         }
 
         if (!$this->progress->areModuleLessonsComplete($userId, $module)) {
@@ -61,6 +66,10 @@ class ModuleQuizController extends Controller
             return response()->json(['success' => false, 'message' => 'Module not found.'], Response::HTTP_NOT_FOUND);
         }
 
+        if ($blocked = $this->yearLockedResponse($userId, $module)) {
+            return $blocked;
+        }
+
         if (!$this->progress->areModuleLessonsComplete($userId, $module)) {
             return response()->json([
                 'success' => false,
@@ -71,7 +80,7 @@ class ModuleQuizController extends Controller
         $validated = $request->validate([
             'answers' => 'required|array|min:1',
             'answers.*.quiz_id' => 'required|exists:lesson_quizzes,id',
-            'answers.*.selected' => 'required|string',
+            'answers.*.selected' => 'nullable|string|max:5000',
         ]);
 
         $lessonIds = Lesson::where('module_id', $moduleId)->pluck('id');
@@ -151,6 +160,20 @@ class ModuleQuizController extends Controller
                 ? "You passed with {$score}/{$total} ({$percent}%)."
                 : "Score {$score}/{$total} ({$percent}%). You need ".self::PASS_PERCENT."% to pass. Repeat the module from the first lesson.",
         ], Response::HTTP_OK);
+    }
+
+    private function yearLockedResponse(int $userId, SubjectModule $module): ?\Illuminate\Http\JsonResponse
+    {
+        $subject = Subject::find($module->subject_id);
+        if ($subject && !$this->progress->isYearUnlocked($userId, (int) $subject->year_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->progress->yearUnlockMessage($userId, (int) $subject->year_id)
+                    ?? 'This year level is locked.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
     }
 
     private function resolveCorrectAnswerText(Quiz $quiz): string

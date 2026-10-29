@@ -39,12 +39,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::get('/years', [YearController::class, 'index']);
-Route::get('/subjects/{year}', [SubjectController::class, 'index']);
 Route::get('/module-lessons/{moduleId}', [ModuleLessonController::class, 'show']);
 Route::get('/lesson-quizzes/{lessonId}', [LessonQuizController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/years/galaxy', [YearController::class, 'galaxy']);
+    Route::get('/subjects/{year}', [SubjectController::class, 'index']);
     Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);
     Route::get('/subject-progress/{subjectId}', [SubjectProgressController::class, 'show']);
     Route::get('/module-progress/{moduleId}', [ModuleProgressController::class, 'show']);

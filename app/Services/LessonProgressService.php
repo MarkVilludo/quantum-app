@@ -11,9 +11,12 @@ use App\Models\SubjectModule;
 use App\Models\SubjectQuizResult;
 use App\Models\Year;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class LessonProgressService
 {
+    public const FINAL_SUBJECT_QUIZ_QUESTION_COUNT = 30;
+
     public function __construct(private LessonSlidePresenter $slidePresenter)
     {
     }
@@ -117,6 +120,161 @@ class LessonProgressService
             ->get();
     }
 
+    /**
+     * Pool up to {@see FINAL_SUBJECT_QUIZ_QUESTION_COUNT} questions across all modules in a subject,
+     * allocated proportionally by each module's question count, then shuffled.
+     */
+    public function finalSubjectQuizQuestions(int $subjectId, int $limit = self::FINAL_SUBJECT_QUIZ_QUESTION_COUNT): Collection
+    {
+        $modules = SubjectModule::where('subject_id', $subjectId)->orderBy('id')->get();
+        /** @var array<int, Collection<int, Quiz>> $pools */
+        $pools = [];
+
+        foreach ($modules as $module) {
+            $lessonIds = Lesson::where('module_id', $module->id)->orderBy('id')->pluck('id');
+            $quizzes = Quiz::whereIn('lesson_id', $lessonIds)->get();
+            if ($quizzes->isNotEmpty()) {
+                $pools[$module->id] = $quizzes->shuffle()->values();
+            }
+        }
+
+        if ($pools === []) {
+            return collect();
+        }
+
+        $totalAvailable = (int) collect($pools)->sum(fn (Collection $pool) => $pool->count());
+        $target = min($limit, $totalAvailable);
+        $allocations = $this->proportionalQuestionAllocation(
+            collect($pools)->mapWithKeys(fn (Collection $pool, int $moduleId) => [$moduleId => $pool->count()])->all(),
+            $target
+        );
+
+        $selected = collect();
+        foreach ($pools as $moduleId => $pool) {
+            $take = min($allocations[$moduleId] ?? 0, $pool->count());
+            if ($take > 0) {
+                $selected = $selected->concat($pool->take($take));
+            }
+        }
+
+        if ($selected->count() < $target) {
+            $selectedIds = $selected->pluck('id')->all();
+            $remaining = collect();
+            foreach ($pools as $pool) {
+                $remaining = $remaining->concat($pool->filter(fn (Quiz $q) => ! in_array($q->id, $selectedIds, true)));
+            }
+            $selected = $selected->concat($remaining->shuffle()->take($target - $selected->count()));
+        }
+
+        return $selected->shuffle()->values();
+    }
+
+    /** @param array<int, int> $weights moduleId => question count */
+    private function proportionalQuestionAllocation(array $weights, int $target): array
+    {
+        $totalWeight = array_sum($weights);
+        if ($totalWeight <= 0 || $target <= 0) {
+            return array_fill_keys(array_keys($weights), 0);
+        }
+
+        $allocations = [];
+        $fractions = [];
+        $allocated = 0;
+
+        foreach ($weights as $id => $weight) {
+            $exact = $target * $weight / $totalWeight;
+            $floor = (int) floor($exact);
+            $allocations[$id] = $floor;
+            $fractions[$id] = $exact - $floor;
+            $allocated += $floor;
+        }
+
+        $remainder = $target - $allocated;
+        if ($remainder > 0) {
+            arsort($fractions);
+            foreach (array_keys($fractions) as $id) {
+                if ($remainder <= 0) {
+                    break;
+                }
+                $maxForModule = $weights[$id];
+                if ($allocations[$id] < $maxForModule) {
+                    $allocations[$id]++;
+                    $remainder--;
+                }
+            }
+        }
+
+        return $allocations;
+    }
+
+    public function finalSubjectQuizQuestionsForAttempt(int $userId, int $subjectId): Collection
+    {
+        $key = $this->finalSubjectQuizCacheKey($userId, $subjectId);
+        $ids = Cache::get($key);
+
+        if (is_array($ids) && $ids !== []) {
+            return $this->loadQuizzesByIdOrder($ids);
+        }
+
+        $quizzes = $this->finalSubjectQuizQuestions($subjectId);
+        if ($quizzes->isNotEmpty()) {
+            Cache::put($key, $quizzes->pluck('id')->all(), now()->addHours(4));
+        }
+
+        return $quizzes;
+    }
+
+    /**
+     * Resolve the quiz set to grade on submit: prefer cached attempt ids, else validate submitted ids for this subject.
+     *
+     * @param  list<int>  $submittedQuizIds
+     */
+    public function finalSubjectQuizQuizzesForSubmit(int $userId, int $subjectId, array $submittedQuizIds): Collection
+    {
+        $key = $this->finalSubjectQuizCacheKey($userId, $subjectId);
+        $cachedIds = Cache::get($key);
+        $quizIds = (is_array($cachedIds) && $cachedIds !== [])
+            ? $cachedIds
+            : array_values(array_unique(array_map('intval', $submittedQuizIds)));
+
+        if ($quizIds === []) {
+            return collect();
+        }
+
+        $lessonIds = Lesson::where('subject_id', $subjectId)->pluck('id');
+
+        $quizzes = Quiz::query()
+            ->whereIn('id', $quizIds)
+            ->whereIn('lesson_id', $lessonIds)
+            ->get();
+
+        return $this->orderQuizzesByIdList($quizzes, $quizIds);
+    }
+
+    /** @param  list<int>  $ids */
+    private function loadQuizzesByIdOrder(array $ids): Collection
+    {
+        return $this->orderQuizzesByIdList(Quiz::whereIn('id', $ids)->get(), $ids);
+    }
+
+    /** @param  list<int>  $ids */
+    private function orderQuizzesByIdList(Collection $quizzes, array $ids): Collection
+    {
+        $order = array_flip($ids);
+
+        return $quizzes->sortBy(fn (Quiz $quiz) => $order[$quiz->id] ?? PHP_INT_MAX)->values();
+    }
+
+    public function clearFinalSubjectQuizAttempt(int $userId, int $subjectId): void
+    {
+        Cache::forget($this->finalSubjectQuizCacheKey($userId, $subjectId));
+    }
+
+    private function finalSubjectQuizCacheKey(int $userId, int $subjectId): string
+    {
+        return "final_subject_quiz:{$userId}:{$subjectId}";
+    }
+
     public function isSubjectModulesCompleted(int $userId, int $subjectId): bool
     {
         $modules = SubjectModule::where('subject_id', $subjectId)->orderBy('id')->get();
@@ -143,12 +301,21 @@ class LessonProgressService
         }
 
         foreach ($subjects as $subject) {
-            if (!$this->isSubjectModulesCompleted($userId, $subject->id)) {
+            if (!$this->hasPassedFinalSubjectQuiz($userId, $subject->id)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public function yearUnlockMessage(int $userId, int $yearId): ?string
+    {
+        if ($this->isYearUnlocked($userId, $yearId)) {
+            return null;
+        }
+
+        return 'Pass the Final Subject Quiz for every subject in the previous year to unlock.';
     }
 
     public function isYearUnlocked(int $userId, int $yearId): bool
@@ -177,12 +344,15 @@ class LessonProgressService
     public function galaxyYearsForUser(int $userId): array
     {
         return $this->orderedYears()->map(function (Year $year) use ($userId) {
+            $unlocked = $this->isYearUnlocked($userId, $year->id);
+
             return [
                 'id' => $year->id,
                 'name' => $year->name,
                 'description' => '',
-                'is_unlocked' => $this->isYearUnlocked($userId, $year->id),
+                'is_unlocked' => $unlocked,
                 'is_completed' => $this->isYearCompleted($userId, $year->id),
+                'unlock_message' => $unlocked ? null : $this->yearUnlockMessage($userId, $year->id),
             ];
         })->values()->all();
     }

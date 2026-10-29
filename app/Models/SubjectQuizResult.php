@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubjectQuizResult extends Model
 {
+    protected $table = 'subject_quiz_results';
+
     protected $fillable = [
         'user_id',
         'subject_id',
