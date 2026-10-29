@@ -274,8 +274,10 @@ const roleLabel = computed(() => {
                 </div>
             </header>
 
-            <main>
-                <slot />
+            <main class="min-h-[20rem]">
+                <div :key="page.url" class="qr-page-content">
+                    <slot />
+                </div>
             </main>
         </div>
     </div>

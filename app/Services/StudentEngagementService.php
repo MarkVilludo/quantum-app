@@ -106,8 +106,20 @@ class StudentEngagementService
         ];
     }
 
-    /** @return list<array{id: string, label: string, earned: bool}> */
+    /** @return list<array{id: string, label: string, emoji: string, description: string, how_to_earn: string, earned: bool}> */
     public function badgesForUser(int $userId): array
+    {
+        try {
+            return $this->buildBadgesForUser($userId);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $this->staticBadgeDefinitions(false);
+        }
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function buildBadgesForUser(int $userId): array
     {
         $passedModules = ModuleQuizResult::where('user_id', $userId)->where('passed', true)->count();
         $perfect = ModuleQuizResult::where('user_id', $userId)->where('passed', true)
@@ -118,14 +130,27 @@ class StudentEngagementService
         $fourthYear = $years->last();
         $fourthDone = $fourthYear && $this->progress->isYearCompleted($userId, $fourthYear->id);
 
-        $definitions = [
+        $definitions = $this->staticBadgeDefinitions(false);
+        $definitions[0]['earned'] = DB::table('lesson_completions')->where('user_id', $userId)->exists();
+        $definitions[1]['earned'] = $passedModules >= 1;
+        $definitions[2]['earned'] = $perfect;
+        $definitions[3]['earned'] = $firstYearDone;
+        $definitions[4]['earned'] = $fourthDone;
+
+        return $definitions;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function staticBadgeDefinitions(bool $earned): array
+    {
+        return [
             [
                 'id' => 'first_lesson',
                 'label' => 'First lesson cleared',
                 'emoji' => '📖',
                 'description' => 'You completed your first lesson in the Learning Galaxy.',
                 'how_to_earn' => 'Finish any lesson activity or quick check in a module.',
-                'earned' => DB::table('lesson_completions')->where('user_id', $userId)->exists(),
+                'earned' => $earned,
             ],
             [
                 'id' => 'module_quiz',
@@ -133,7 +158,7 @@ class StudentEngagementService
                 'emoji' => '🏆',
                 'description' => 'You passed a module quiz and proved the material stuck.',
                 'how_to_earn' => 'Complete all lessons in a module, then pass its module quiz.',
-                'earned' => $passedModules >= 1,
+                'earned' => $earned,
             ],
             [
                 'id' => 'perfect_quiz',
@@ -141,7 +166,7 @@ class StudentEngagementService
                 'emoji' => '💯',
                 'description' => 'Flawless run — every question correct on a module quiz.',
                 'how_to_earn' => 'Score 100% on any module quiz.',
-                'earned' => $perfect,
+                'earned' => $earned,
             ],
             [
                 'id' => 'year_one',
@@ -149,7 +174,7 @@ class StudentEngagementService
                 'emoji' => '🪐',
                 'description' => 'You mastered First Year: every subject final quiz passed.',
                 'how_to_earn' => 'Pass the final subject quiz for each First Year subject.',
-                'earned' => $firstYearDone,
+                'earned' => $earned,
             ],
             [
                 'id' => 'graduate',
@@ -157,11 +182,9 @@ class StudentEngagementService
                 'emoji' => '🎓',
                 'description' => 'Full curriculum complete — all year-level final quizzes passed.',
                 'how_to_earn' => 'Pass every final subject quiz across all years in the galaxy.',
-                'earned' => $fourthDone,
+                'earned' => $earned,
             ],
         ];
-
-        return $definitions;
     }
 
     public function continueQuest(int $userId): ?array

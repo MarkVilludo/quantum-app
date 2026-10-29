@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
@@ -57,6 +57,20 @@ const openTier = (band, index) => {
 const closeTier = () => {
     selectedTier.value = null;
 };
+
+const onEscape = (event) => {
+    if (event.key === 'Escape' && selectedTier.value) {
+        closeTier();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', onEscape);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', onEscape);
+});
 </script>
 
 <template>
@@ -144,7 +158,14 @@ const closeTier = () => {
                 <h3 class="text-base font-semibold text-gray-900">Title tiers</h3>
                 <p class="mt-1 text-sm text-gray-500">Tap a tier to see requirements and rewards</p>
 
-                <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <p
+                    v-if="!titleBands.length"
+                    class="mt-4 rounded-lg border border-dashed border-gray-300 bg-slate-50 px-4 py-6 text-center text-sm text-gray-500"
+                >
+                    Title tier data is not available yet. Refresh the page or complete a lesson in the app to sync XP.
+                </p>
+
+                <div v-else class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     <button
                         v-for="(band, index) in titleBands"
                         :key="`${band.min_level}-${band.title}`"
@@ -197,7 +218,8 @@ const closeTier = () => {
         <Teleport to="body">
             <div
                 v-if="selectedTier"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                role="presentation"
                 @click.self="closeTier"
             >
                 <div

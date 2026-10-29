@@ -4,6 +4,9 @@ import { ref, watch, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageContainer from '@/Components/PageContainer.vue';
 import PaginationBar from '@/Components/PaginationBar.vue';
+import AsyncContent from '@/Components/AsyncContent.vue';
+import SkeletonTable from '@/Components/Skeleton/SkeletonTable.vue';
+import { useInertiaLoading } from '@/composables/useInertiaLoading';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -17,6 +20,7 @@ const props = defineProps({
 const searchQuery = ref(props.filters?.search || '');
 const yearFilter = ref(props.filters?.year_id || '');
 
+const { navigating } = useInertiaLoading();
 const isAdmin = computed(() => props.viewerRole === 'admin');
 const studentRows = computed(() => props.students?.data ?? []);
 
@@ -82,6 +86,11 @@ const graduateDev = (student) => {
                     </select>
                 </div>
             </template>
+
+            <AsyncContent :loading="navigating">
+                <template #skeleton>
+                    <SkeletonTable :rows="8" :columns="7" />
+                </template>
 
             <div class="overflow-x-auto rounded-lg border border-gray-200">
                 <table class="qr-table text-sm">
@@ -149,6 +158,7 @@ const graduateDev = (student) => {
                 @previous="goToPage(students.current_page - 1)"
                 @next="goToPage(students.current_page + 1)"
             />
+            </AsyncContent>
         </PageContainer>
     </AuthenticatedLayout>
 </template>

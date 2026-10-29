@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ModuleQuizResult;
 use App\Models\SubjectQuizResult;
 use App\Services\GraduationService;
+use App\Services\QuantumRankService;
 use App\Services\StudentEngagementService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,6 +16,7 @@ class StudentProfileController extends Controller
     public function __construct(
         private StudentEngagementService $engagement,
         private GraduationService $graduation,
+        private QuantumRankService $ranks,
     ) {
     }
 
@@ -134,6 +136,25 @@ class StudentProfileController extends Controller
             $dashboard = null;
         }
 
+        $totalXp = (int) $user->quantum_xp;
+        $rankLadder = $this->mobileRankLadder($totalXp);
+
+        if (! is_array($dashboard)) {
+            $dashboard = [
+                'quantum_xp' => $totalXp,
+                'rank' => $this->ranks->progressFromTotalXp($totalXp),
+                'rank_ladder' => $rankLadder,
+                'daily_streak' => (int) $user->daily_streak,
+                'daily_lesson_goal' => StudentEngagementService::DAILY_LESSON_GOAL,
+                'lessons_completed_today' => 0,
+                'daily_goal_met' => false,
+                'continue_quest' => null,
+                'year_progress' => [],
+            ];
+        } elseif (! isset($dashboard['rank_ladder']) || ! is_array($dashboard['rank_ladder'])) {
+            $dashboard['rank_ladder'] = $rankLadder;
+        }
+
         return response()->json([
             'success' => true,
             'user' => [
@@ -142,9 +163,19 @@ class StudentProfileController extends Controller
                 'email' => $user->email,
             ],
             'dashboard' => $dashboard,
+            'rank_ladder' => $rankLadder,
             'graduation' => $graduation,
             'badges' => $badges,
             'quiz_scores_by_subject' => array_values($bySubject),
         ], Response::HTTP_OK);
+    }
+
+    /** @return array<string, mixed> */
+    private function mobileRankLadder(int $totalXp): array
+    {
+        $ladder = $this->ranks->profileLadder($totalXp);
+        unset($ladder['levels']);
+
+        return $ladder;
     }
 }

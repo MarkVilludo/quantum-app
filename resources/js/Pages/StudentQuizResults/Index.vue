@@ -4,6 +4,9 @@ import { ref, watch, computed } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageContainer from '@/Components/PageContainer.vue';
 import PaginationBar from '@/Components/PaginationBar.vue';
+import AsyncContent from '@/Components/AsyncContent.vue';
+import SkeletonTable from '@/Components/Skeleton/SkeletonTable.vue';
+import { useInertiaLoading } from '@/composables/useInertiaLoading';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -20,6 +23,7 @@ const subjectFilter = ref(props.filters.subject_id || "");
 const moduleFilter = ref(props.filters.module_id || "");
 const quizTypeFilter = ref(props.filters.quiz_type || "");
 
+const { navigating } = useInertiaLoading();
 const isAdmin = computed(() => props.viewerRole === 'admin');
 
 const filterParams = () => ({
@@ -106,6 +110,11 @@ watch([searchQuery, userFilter, yearFilter, subjectFilter, moduleFilter, quizTyp
                 </div>
             </template>
 
+            <AsyncContent :loading="navigating">
+                <template #skeleton>
+                    <SkeletonTable :rows="8" :columns="8" />
+                </template>
+
             <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="qr-table text-sm">
                         <thead>
@@ -173,6 +182,7 @@ watch([searchQuery, userFilter, yearFilter, subjectFilter, moduleFilter, quizTyp
                 @previous="goToPage(results.current_page - 1)"
                 @next="goToPage(results.current_page + 1)"
             />
+            </AsyncContent>
         </PageContainer>
     </AuthenticatedLayout>
 </template>

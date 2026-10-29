@@ -4,6 +4,9 @@ import { ref, watch, computed } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageContainer from '@/Components/PageContainer.vue';
 import PaginationBar from '@/Components/PaginationBar.vue';
+import AsyncContent from '@/Components/AsyncContent.vue';
+import SkeletonTable from '@/Components/Skeleton/SkeletonTable.vue';
+import { useInertiaLoading } from '@/composables/useInertiaLoading';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -25,6 +28,7 @@ const searchQuery = ref(props.filters?.search || "");
 const subjectFilter = ref(props.filters?.subject_id || "");
 const quizTypeFilter = ref(props.filters?.quiz_type || "");
 
+const { navigating } = useInertiaLoading();
 const subjectOptions = computed(() => props.filterOptions?.subjects ?? []);
 const resultRows = computed(() => props.results?.data ?? []);
 
@@ -82,6 +86,11 @@ watch([searchQuery, subjectFilter, quizTypeFilter], () => {
                     <option value="subject_final">Final subject quiz</option>
                 </select>
             </template>
+
+            <AsyncContent :loading="navigating">
+                <template #skeleton>
+                    <SkeletonTable :rows="6" :columns="7" />
+                </template>
 
             <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="qr-table text-sm">
@@ -142,6 +151,7 @@ watch([searchQuery, subjectFilter, quizTypeFilter], () => {
                 @previous="goToPage(results.current_page - 1)"
                 @next="goToPage(results.current_page + 1)"
             />
+            </AsyncContent>
         </PageContainer>
     </AuthenticatedLayout>
 </template>

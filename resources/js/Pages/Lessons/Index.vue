@@ -1,10 +1,13 @@
 <script setup>
 import { usePage, router, useForm } from "@inertiajs/vue3";
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PageContainer from '@/Components/PageContainer.vue';
 import PaginationBar from '@/Components/PaginationBar.vue';
+import AsyncContent from '@/Components/AsyncContent.vue';
+import SkeletonTable from '@/Components/Skeleton/SkeletonTable.vue';
 import { Head } from '@inertiajs/vue3';
+import { useInertiaLoading } from '@/composables/useInertiaLoading';
 
 // const props = defineProps({ lessons: Object, search: String });
 
@@ -23,8 +26,11 @@ const selectedModule = ref(props.filters.module_id || "");
 
 const subjectOptions = ref([]);
 const moduleOptions = ref([]);
+const loadingSubjects = ref(false);
+const loadingModules = ref(false);
+const { navigating } = useInertiaLoading();
 
-const currentPage = ref(props.lessons.current_page); // Track current page
+const tableLoading = computed(() => navigating.value || loadingSubjects.value || loadingModules.value);
 
 const goToPage = (page) => {
     if (page >= 1 && page <= props.lessons.last_page) {
@@ -40,6 +46,7 @@ const goToPage = (page) => {
 // Fetch subjects when year changes
 const fetchSubjects = async () => {
     if (selectedYear.value) {
+        loadingSubjects.value = true;
         try {
             const response = await axios.get(route('subjects.get', { yearId: selectedYear.value }));
             subjectOptions.value = response.data;
@@ -49,6 +56,8 @@ const fetchSubjects = async () => {
         } catch (error) {
             console.error("Error fetching subjects:", error);
             subjectOptions.value = [];
+        } finally {
+            loadingSubjects.value = false;
         }
     } else {
         subjectOptions.value = [];
@@ -61,12 +70,15 @@ const fetchSubjects = async () => {
 // Fetch modules when subject changes
 const fetchModules = async () => {
     if (selectedSubject.value) {
+        loadingModules.value = true;
         try {
             const response = await axios.get(route('modules.get', { subject_id: selectedSubject.value }));
             moduleOptions.value = response.data;
             selectedModule.value = "";
         } catch (error) {
             console.error("Error fetching modules:", error);
+        } finally {
+            loadingModules.value = false;
         }
     } else {
         moduleOptions.value = [];
@@ -150,6 +162,11 @@ const deleteLesson = (lessonId) => {
                 <a :href="route('lessons.create')" class="qr-btn-primary shrink-0">Create lesson</a>
             </template>
 
+            <AsyncContent :loading="tableLoading">
+                <template #skeleton>
+                    <SkeletonTable :rows="8" :columns="7" />
+                </template>
+
             <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="qr-table text-sm">
                         <thead>
@@ -204,6 +221,7 @@ const deleteLesson = (lessonId) => {
                 @previous="goToPage(lessons.current_page - 1)"
                 @next="goToPage(lessons.current_page + 1)"
             />
+            </AsyncContent>
         </PageContainer>
     </AuthenticatedLayout>
 </template>

@@ -3,6 +3,9 @@ import { router, usePage } from "@inertiajs/vue3";
 import { ref } from "vue";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import SkeletonQuizList from '@/Components/Skeleton/SkeletonQuizList.vue';
+import { useInertiaLoading } from '@/composables/useInertiaLoading';
+import AsyncContent from '@/Components/AsyncContent.vue';
 
 const props = defineProps({
     lesson: Object,
@@ -11,6 +14,7 @@ const props = defineProps({
 });
 
 const successMessage = ref(null);
+const { navigating } = useInertiaLoading();
 
 const deleteQuiz = (id) => {
     if (confirm("Are you sure you want to delete this quiz?")) {
@@ -58,6 +62,11 @@ const deleteQuiz = (id) => {
                         </a>
                     </div>
 
+                    <AsyncContent :loading="navigating">
+                        <template #skeleton>
+                            <SkeletonQuizList :count="3" />
+                        </template>
+
                     <div v-if="quizzes.data.length">
                         <div class="space-y-6">
                             <div v-for="quiz in quizzes.data" :key="quiz.id" class="border p-4 rounded shadow">
@@ -91,6 +100,7 @@ const deleteQuiz = (id) => {
                         </div>
                     </div>
                     <div v-else class="text-gray-500">No quizzes added for this lesson yet.</div>
+                    </AsyncContent>
                 </div>
             </div>
         </div>
