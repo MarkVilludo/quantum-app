@@ -8,7 +8,10 @@ const props = defineProps({
     quantum_xp: Number,
     rank: Object,
     rank_ladder: Object,
+    graduation: Object,
 });
+
+const showCertificate = computed(() => props.graduation?.graduated === true);
 
 const tierEmojis = ['🌱', '⚡', '🧭', '🏃', '🐛', '⚔️', '🚀', '🏗️', '🔬', '🛡️', '🌌', '✨'];
 const selectedTier = ref(null);
@@ -100,6 +103,25 @@ const closeTier = () => {
                         ({{ nextLevel.total_xp_required }} total XP)
                     </p>
                 </div>
+            </section>
+
+            <section
+                v-if="showCertificate"
+                class="rounded-2xl border border-quantum-success/40 bg-gradient-to-br from-quantum-success/10 to-quantum-bg-dark p-6 shadow-lg sm:p-8"
+            >
+                <p class="text-sm font-medium text-quantum-success">Learning Galaxy complete</p>
+                <h2 class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">Graduation certificate</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    You passed every year-level final subject quiz. Open your printable certificate anytime.
+                </p>
+                <a
+                    :href="route('my-certificate')"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mt-4 inline-flex items-center rounded-lg bg-quantum-primary px-4 py-2 text-sm font-semibold text-white shadow hover:opacity-90"
+                >
+                    View &amp; print certificate
+                </a>
             </section>
 
             <!-- Earn XP -->

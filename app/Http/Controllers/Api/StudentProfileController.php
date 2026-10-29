@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ModuleQuizResult;
 use App\Models\SubjectQuizResult;
+use App\Services\GraduationService;
 use App\Services\StudentEngagementService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class StudentProfileController extends Controller
 {
-    public function __construct(private StudentEngagementService $engagement)
-    {
+    public function __construct(
+        private StudentEngagementService $engagement,
+        private GraduationService $graduation,
+    ) {
     }
 
     public function show(Request $request)
@@ -88,6 +91,32 @@ class StudentProfileController extends Controller
 
         ksort($bySubject);
 
+        try {
+            $badges = $this->engagement->badgesForUser($user->id);
+        } catch (\Throwable $e) {
+            report($e);
+            $badges = [];
+        }
+
+        try {
+            $graduation = $this->graduation->statusPayloadForUser($user);
+        } catch (\Throwable $e) {
+            report($e);
+            $graduation = [
+                'eligible' => false,
+                'graduated' => false,
+                'student_name' => $user->name,
+                'program_title' => 'Quantum Realm Programming Curriculum',
+            ];
+        }
+
+        try {
+            $dashboard = $this->engagement->dashboard($user->id);
+        } catch (\Throwable $e) {
+            report($e);
+            $dashboard = null;
+        }
+
         return response()->json([
             'success' => true,
             'user' => [
@@ -95,7 +124,9 @@ class StudentProfileController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
-            'dashboard' => $this->engagement->dashboard($user->id),
+            'dashboard' => $dashboard,
+            'graduation' => $graduation,
+            'badges' => $badges,
             'quiz_scores_by_subject' => array_values($bySubject),
         ], Response::HTTP_OK);
     }

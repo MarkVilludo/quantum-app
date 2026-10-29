@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 
 class CmsStudentProgressionService
 {
-    public function __construct(private QuantumRankService $ranks)
-    {
+    public function __construct(
+        private QuantumRankService $ranks,
+        private GraduationService $graduation,
+    ) {
     }
 
     public function progressionPayloadForUser(User $user): array
@@ -28,6 +30,7 @@ class CmsStudentProgressionService
             'quantum_xp' => $totalXp,
             'rank' => $rank,
             'rank_ladder' => $ladder,
+            'graduation' => $this->graduation->statusPayloadForUser($user),
         ];
     }
 

@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::dropIfExists('graduation_completions');
+
+        Schema::create('graduation_completions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $table->string('certificate_code', 64)->unique();
+            $table->timestamp('graduated_at');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('graduation_completions');
+
+        Schema::create('graduation_completions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('year_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('final_module_id')->nullable()->constrained('modules')->nullOnDelete();
+            $table->timestamp('graduated_at')->nullable();
+            $table->timestamps();
+        });
+    }
+};

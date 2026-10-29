@@ -115,10 +115,12 @@ class LessonActivityController extends Controller
             'success' => true,
             'correct' => true,
             'message' => 'Activity completed.',
-            'celebration' => [
-                'title' => !empty($xp['leveled_up']) ? 'Level up!' : 'Lesson complete!',
-                'body' => $this->engagement->celebrationBody($xp['xp_awarded'], $xp),
-            ],
+            'celebration' => $this->engagement->celebrationPayload(
+                ! empty($xp['leveled_up']) ? 'Level up!' : 'Lesson complete!',
+                $xp['xp_awarded'],
+                $xp,
+                'xp'
+            ),
             'engagement' => $xp,
         ], Response::HTTP_OK);
     }
@@ -162,10 +164,12 @@ class LessonActivityController extends Controller
             'success' => true,
             'correct' => true,
             'message' => 'Activity completed.',
-            'celebration' => [
-                'title' => !empty($xp['leveled_up']) ? 'Level up!' : 'Lesson complete!',
-                'body' => $this->engagement->celebrationBody($xp['xp_awarded'], $xp),
-            ],
+            'celebration' => $this->engagement->celebrationPayload(
+                ! empty($xp['leveled_up']) ? 'Level up!' : 'Lesson complete!',
+                $xp['xp_awarded'],
+                $xp,
+                'xp'
+            ),
             'engagement' => $xp,
         ], Response::HTTP_OK);
     }

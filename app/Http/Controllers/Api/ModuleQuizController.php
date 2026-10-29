@@ -140,10 +140,12 @@ class ModuleQuizController extends Controller
         if ($passed) {
             $user = User::findOrFail($userId);
             $engagement = $this->engagement->recordModuleQuizPassed($user, $percent, $firstPass);
-            $celebration = [
-                'title' => !empty($engagement['leveled_up']) ? 'Level up!' : 'Module quiz passed!',
-                'body' => $this->engagement->celebrationBody($engagement['xp_awarded'], $engagement),
-            ];
+            $celebration = $this->engagement->celebrationPayload(
+                ! empty($engagement['leveled_up']) ? 'Level up!' : 'Module quiz passed!',
+                $engagement['xp_awarded'],
+                $engagement,
+                'quiz_pass'
+            );
         }
 
         return response()->json([

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\SubjectProgressController;
 use App\Http\Controllers\Api\SubjectFinalQuizController;
 use App\Http\Controllers\Api\ModuleQuizController;
 use App\Http\Controllers\Api\StudentProfileController;
+use App\Http\Controllers\Api\GraduationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,4 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/lesson-quizzes/submit', [LessonQuizResultController::class, 'store']);
     Route::get('/lesson-quizzes/result/{lessonId}', [LessonQuizResultController::class, 'show']);
     Route::get('/student-profile', [StudentProfileController::class, 'show']);
+    Route::get('/graduation/status', [GraduationController::class, 'status']);
+    Route::get('/graduation/certificate', [GraduationController::class, 'certificate']);
 });

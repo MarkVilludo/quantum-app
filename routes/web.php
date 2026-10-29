@@ -112,5 +112,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/student-quiz-results', [StudentController::class, 'index'])->name('student-quiz-results.index');
 
     Route::get('/student-progression', [StudentProgressionController::class, 'index'])->name('student-progression.index');
+    Route::post('/student-progression/{user}/complete-all', [StudentProgressionController::class, 'completeAllDev'])
+        ->name('student-progression.complete-all');
     Route::get('/my-progression', [StudentProgressionController::class, 'myProgression'])->name('my-progression.index');
+    Route::get('/my-certificate', [StudentProgressionController::class, 'certificate'])->name('my-certificate');
 });

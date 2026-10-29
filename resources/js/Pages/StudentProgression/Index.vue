@@ -11,6 +11,7 @@ const props = defineProps({
     filters: Object,
     filterOptions: Object,
     viewerRole: String,
+    devProgressionToolsEnabled: Boolean,
 });
 
 const searchQuery = ref(props.filters?.search || '');
@@ -39,6 +40,18 @@ watch([searchQuery, yearFilter], () => {
         replace: true,
     });
 });
+
+const graduateDev = (student) => {
+    if (
+        !props.devProgressionToolsEnabled ||
+        !confirm(
+            `Dev tool: mark ${student.email} as fully graduated across all years in the CMS? This overwrites quiz/progress records.`,
+        )
+    ) {
+        return;
+    }
+    router.post(route('student-progression.complete-all', student.id), {}, { preserveScroll: true });
+};
 </script>
 
 <template>
@@ -81,11 +94,12 @@ watch([searchQuery, yearFilter], () => {
                             <th>Title tier</th>
                             <th class="text-center">Quantum XP</th>
                             <th>Progress to next level</th>
+                            <th v-if="devProgressionToolsEnabled" class="text-right">Dev</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="!studentRows.length">
-                            <td colspan="7" class="py-8 text-center text-gray-500">
+                            <td :colspan="devProgressionToolsEnabled ? 8 : 7" class="py-8 text-center text-gray-500">
                                 No students match your filters yet.
                             </td>
                         </tr>
@@ -114,6 +128,15 @@ watch([searchQuery, yearFilter], () => {
                                         {{ student.xp_in_level }}/{{ student.xp_for_next_level }}
                                     </span>
                                 </div>
+                            </td>
+                            <td v-if="devProgressionToolsEnabled" class="text-right">
+                                <button
+                                    type="button"
+                                    class="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                                    @click="graduateDev(student)"
+                                >
+                                    Complete all
+                                </button>
                             </td>
                         </tr>
                     </tbody>

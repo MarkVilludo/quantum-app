@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\Subject;
 use App\Models\SubjectQuizResult;
+use App\Models\User;
+use App\Services\GraduationService;
 use App\Services\LessonProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,8 +17,10 @@ use Illuminate\Validation\ValidationException;
 
 class SubjectFinalQuizController extends Controller
 {
-    public function __construct(private LessonProgressService $progress)
-    {
+    public function __construct(
+        private LessonProgressService $progress,
+        private GraduationService $graduation,
+    ) {
     }
 
     public function show(int $subjectId)
@@ -166,14 +170,41 @@ class SubjectFinalQuizController extends Controller
 
         $this->progress->clearFinalSubjectQuizAttempt($userId, $subjectId);
 
+        $graduation = null;
+        if ($passed) {
+            $user = User::find($userId);
+            if ($user) {
+                $graduation = $this->graduation->processAfterFinalQuizPass($user);
+            }
+        }
+
+        $message = $passed
+            ? 'Congratulations! You passed the final subject quiz.'
+            : 'Keep studying and try the final quiz again.';
+        if ($graduation && ! empty($graduation['newly_graduated'])) {
+            $message = 'You completed every year-level final quiz! Open your graduation certificate.';
+        }
+
+        $celebration = null;
+        if ($passed) {
+            $variant = ($graduation && ! empty($graduation['newly_graduated'])) ? 'graduate' : 'quiz_pass';
+            $celebration = [
+                'title' => ($graduation && ! empty($graduation['newly_graduated']))
+                    ? 'Quantum graduate!'
+                    : 'Subject mastered!',
+                'body' => $message,
+                'variant' => $variant,
+            ];
+        }
+
         return response()->json([
             'success' => true,
             'passed' => $passed,
             'score' => $score,
             'total' => $total,
-            'message' => $passed
-                ? 'Congratulations! You passed the final subject quiz.'
-                : 'Keep studying and try the final quiz again.',
+            'graduation' => $graduation,
+            'celebration' => $celebration,
+            'message' => $message,
         ], Response::HTTP_OK);
     }
 

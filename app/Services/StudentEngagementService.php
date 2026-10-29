@@ -55,6 +55,24 @@ class StudentEngagementService
         return $this->buildEngagementPayload($user, $xp, $previousXp);
     }
 
+    public function celebrationVariant(?array $engagement, string $default = 'xp'): string
+    {
+        if (! empty($engagement['leveled_up'])) {
+            return 'level_up';
+        }
+
+        return $default;
+    }
+
+    public function celebrationPayload(string $title, int $xpAwarded, array $engagement, string $defaultVariant = 'xp'): array
+    {
+        return [
+            'title' => $title,
+            'body' => $this->celebrationBody($xpAwarded, $engagement),
+            'variant' => $this->celebrationVariant($engagement, $defaultVariant),
+        ];
+    }
+
     public function celebrationBody(int $xpAwarded, array $engagement): string
     {
         $parts = [];
@@ -100,13 +118,50 @@ class StudentEngagementService
         $fourthYear = $years->last();
         $fourthDone = $fourthYear && $this->progress->isYearCompleted($userId, $fourthYear->id);
 
-        return [
-            ['id' => 'first_lesson', 'label' => 'First lesson cleared', 'earned' => DB::table('lesson_completions')->where('user_id', $userId)->exists()],
-            ['id' => 'module_quiz', 'label' => 'Module quiz champion', 'earned' => $passedModules >= 1],
-            ['id' => 'perfect_quiz', 'label' => 'Perfect module quiz', 'earned' => $perfect],
-            ['id' => 'year_one', 'label' => 'First Year complete', 'earned' => $firstYearDone],
-            ['id' => 'graduate', 'label' => 'Quantum graduate', 'earned' => $fourthDone],
+        $definitions = [
+            [
+                'id' => 'first_lesson',
+                'label' => 'First lesson cleared',
+                'emoji' => '📖',
+                'description' => 'You completed your first lesson in the Learning Galaxy.',
+                'how_to_earn' => 'Finish any lesson activity or quick check in a module.',
+                'earned' => DB::table('lesson_completions')->where('user_id', $userId)->exists(),
+            ],
+            [
+                'id' => 'module_quiz',
+                'label' => 'Module quiz champion',
+                'emoji' => '🏆',
+                'description' => 'You passed a module quiz and proved the material stuck.',
+                'how_to_earn' => 'Complete all lessons in a module, then pass its module quiz.',
+                'earned' => $passedModules >= 1,
+            ],
+            [
+                'id' => 'perfect_quiz',
+                'label' => 'Perfect module quiz',
+                'emoji' => '💯',
+                'description' => 'Flawless run — every question correct on a module quiz.',
+                'how_to_earn' => 'Score 100% on any module quiz.',
+                'earned' => $perfect,
+            ],
+            [
+                'id' => 'year_one',
+                'label' => 'First Year complete',
+                'emoji' => '🪐',
+                'description' => 'You mastered First Year: every subject final quiz passed.',
+                'how_to_earn' => 'Pass the final subject quiz for each First Year subject.',
+                'earned' => $firstYearDone,
+            ],
+            [
+                'id' => 'graduate',
+                'label' => 'Quantum graduate',
+                'emoji' => '🎓',
+                'description' => 'Full curriculum complete — all year-level final quizzes passed.',
+                'how_to_earn' => 'Pass every final subject quiz across all years in the galaxy.',
+                'earned' => $fourthDone,
+            ],
         ];
+
+        return $definitions;
     }
 
     public function continueQuest(int $userId): ?array
