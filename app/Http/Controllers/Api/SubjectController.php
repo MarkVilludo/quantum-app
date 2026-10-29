@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Subject;
+use App\Services\StudentEngagementService;
 use Illuminate\Http\Response;
 
 class SubjectController extends Controller
 {
+    public function __construct(private StudentEngagementService $engagement)
+    {
+    }
+
     public function index($year)
     {
         $subjects = Subject::where('year_id', $year)->get();
@@ -21,10 +25,19 @@ class SubjectController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
+        $payload = $subjects->map(function (Subject $subject) {
+            return [
+                'id' => $subject->id,
+                'name' => $subject->name,
+                'year_id' => $subject->year_id,
+                'mission' => $this->engagement->defaultMissionForSubject($subject),
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'message' => 'Subjects retrieved successfully.',
-            'data' => $subjects
+            'data' => $payload,
         ], Response::HTTP_OK);
     }
 }

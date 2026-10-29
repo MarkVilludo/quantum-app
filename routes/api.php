@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/module-progress/{moduleId}', [ModuleProgressController::class, 'show']);
     Route::get('/module-quiz/{moduleId}', [ModuleQuizController::class, 'show']);
     Route::post('/module-quiz/{moduleId}/submit', [ModuleQuizController::class, 'submit']);
+    Route::post('/lesson-activities/micro-check', [LessonActivityController::class, 'submitMicroCheck']);
     Route::post('/lesson-activities/novice', [LessonActivityController::class, 'submitNovice']);
     Route::post('/lesson-activities/quiz', [LessonActivityController::class, 'submitQuizMode']);
     Route::get('/subject-final-quiz/{subjectId}', [SubjectFinalQuizController::class, 'show']);

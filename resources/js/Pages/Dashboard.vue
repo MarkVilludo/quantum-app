@@ -53,12 +53,30 @@ const role = computed(() => usePage().props.auth.user?.role);
                 </Link>
 
                 <Link
+                    v-if="role === 'student'"
+                    :href="route('my-progression.index')"
+                    class="rounded-xl border border-quantum-gold/40 bg-gradient-to-br from-quantum-bg-mid to-quantum-surface p-6 text-white shadow-sm transition hover:border-quantum-gold/70"
+                >
+                    <p class="text-sm font-medium text-quantum-gold">Progression</p>
+                    <p class="mt-1 text-lg font-semibold">My levels &amp; title tiers</p>
+                </Link>
+
+                <Link
                     v-if="role === 'teacher' || role === 'admin'"
                     :href="route('quiz-results.index')"
                     class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-quantum-primary/30 hover:bg-slate-50"
                 >
                     <p class="text-sm font-medium text-gray-500">Reports</p>
                     <p class="mt-1 text-lg font-semibold text-quantum-primary">Student quiz results</p>
+                </Link>
+
+                <Link
+                    v-if="role === 'teacher' || role === 'admin'"
+                    :href="route('student-progression.index')"
+                    class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-quantum-accent/40 hover:bg-slate-50"
+                >
+                    <p class="text-sm font-medium text-gray-500">Reports</p>
+                    <p class="mt-1 text-lg font-semibold text-quantum-primary">Student levels &amp; EXP</p>
                 </Link>
             </div>
         </div>

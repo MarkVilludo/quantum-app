@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\Quiz;
 use App\Models\SubjectModule;
+use App\Models\User;
 use App\Services\LessonProgressService;
+use App\Services\StudentEngagementService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -16,8 +18,10 @@ class ModuleQuizController extends Controller
 
     public const PASS_PERCENT = 60;
 
-    public function __construct(private LessonProgressService $progress)
-    {
+    public function __construct(
+        private LessonProgressService $progress,
+        private StudentEngagementService $engagement,
+    ) {
     }
 
     public function show(int $moduleId)
@@ -102,6 +106,7 @@ class ModuleQuizController extends Controller
 
         $passThreshold = $total > 0 ? (int) ceil($total * (self::PASS_PERCENT / 100)) : 0;
         $passed = $score >= $passThreshold;
+        $firstPass = $passed && !$this->progress->hasPassedModuleQuiz($userId, $moduleId);
 
         $this->progress->storeModuleQuizResult($userId, $moduleId, $score, $total, $passed, $details);
 
@@ -109,7 +114,28 @@ class ModuleQuizController extends Controller
             $this->progress->resetModuleLessonProgress($userId, $moduleId);
         }
 
-        $percent = $total > 0 ? round(($score / $total) * 100) : 0;
+        $percent = $total > 0 ? (int) round(($score / $total) * 100) : 0;
+
+        $review = [];
+        foreach ($details as $row) {
+            $review[] = [
+                'quiz_id' => $row['quiz_id'],
+                'is_correct' => $row['is_correct'],
+                'selected' => $row['selected'],
+                'correct' => $row['correct'],
+            ];
+        }
+
+        $engagement = null;
+        $celebration = null;
+        if ($passed) {
+            $user = User::findOrFail($userId);
+            $engagement = $this->engagement->recordModuleQuizPassed($user, $percent, $firstPass);
+            $celebration = [
+                'title' => !empty($engagement['leveled_up']) ? 'Level up!' : 'Module quiz passed!',
+                'body' => $this->engagement->celebrationBody($engagement['xp_awarded'], $engagement),
+            ];
+        }
 
         return response()->json([
             'success' => true,
@@ -118,6 +144,9 @@ class ModuleQuizController extends Controller
             'total' => $total,
             'percent' => $percent,
             'pass_percent' => self::PASS_PERCENT,
+            'review' => $review,
+            'engagement' => $engagement,
+            'celebration' => $celebration,
             'message' => $passed
                 ? "You passed with {$score}/{$total} ({$percent}%)."
                 : "Score {$score}/{$total} ({$percent}%). You need ".self::PASS_PERCENT."% to pass. Repeat the module from the first lesson.",

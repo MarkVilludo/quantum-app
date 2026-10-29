@@ -23,7 +23,12 @@ class User extends Authenticatable
         'email',
         'role',
         'password',
-        'year_id'
+        'year_id',
+        'quantum_xp',
+        'daily_streak',
+        'last_activity_date',
+        'lessons_today_date',
+        'lessons_today_count',
     ];
 
     /**

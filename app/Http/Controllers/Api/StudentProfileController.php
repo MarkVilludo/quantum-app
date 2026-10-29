@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ModuleQuizResult;
 use App\Models\SubjectQuizResult;
+use App\Services\StudentEngagementService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class StudentProfileController extends Controller
 {
+    public function __construct(private StudentEngagementService $engagement)
+    {
+    }
+
     public function show(Request $request)
     {
         $user = $request->user();
@@ -90,6 +95,7 @@ class StudentProfileController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
+            'dashboard' => $this->engagement->dashboard($user->id),
             'quiz_scores_by_subject' => array_values($bySubject),
         ], Response::HTTP_OK);
     }

@@ -13,6 +13,7 @@ class Subject extends Model
     protected $fillable = [
         'name',
         'year_id',
+        'mission',
     ];
 
     // Define the belongsTo relationship for the year

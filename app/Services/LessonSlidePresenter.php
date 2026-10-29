@@ -44,13 +44,29 @@ class LessonSlidePresenter
                 ? $slide['title']
                 : $this->inferTitle($slide['content'], $step, $lessonName);
 
-            $out[] = [
+            $row = [
                 'step' => $step,
                 'title' => $title,
                 'content' => $slide['content'],
                 'emoji' => self::STEP_EMOJIS[$index % count(self::STEP_EMOJIS)],
                 'total' => $total,
             ];
+
+            if (isset($slide['check_question'], $slide['check_answer'])) {
+                $row['micro_check'] = [
+                    'question' => (string) $slide['check_question'],
+                    'options' => $slide['check_options'] ?? ['Yes, continue', 'Review this slide'],
+                    'correct' => (string) $slide['check_answer'],
+                ];
+            } elseif ($total > 2 && $step < $total && $step % 2 === 0) {
+                $row['micro_check'] = [
+                    'question' => 'Quick check: did you understand this slide?',
+                    'options' => ['Yes, I got it', 'Not yet — I\'ll re-read'],
+                    'correct' => 'Yes, I got it',
+                ];
+            }
+
+            $out[] = $row;
         }
 
         return $out;

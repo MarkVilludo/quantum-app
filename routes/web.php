@@ -12,7 +12,8 @@ use App\Http\Controllers\CMS\{
     LessonQuizController,
     LessonQuizResultController,
     AdminController,
-    StudentController
+    StudentController,
+    StudentProgressionController,
 };
 
 use Inertia\Inertia;
@@ -109,4 +110,7 @@ Route::middleware(['auth'])->group(function () {
 
     //student quiz results
     Route::get('/student-quiz-results', [StudentController::class, 'index'])->name('student-quiz-results.index');
+
+    Route::get('/student-progression', [StudentProgressionController::class, 'index'])->name('student-progression.index');
+    Route::get('/my-progression', [StudentProgressionController::class, 'myProgression'])->name('my-progression.index');
 });
