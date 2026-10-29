@@ -60,7 +60,7 @@ const steps = [
         >
             <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <Link href="/" class="flex items-center gap-2.5">
-                    <ApplicationLogo class="h-9 w-auto fill-current text-quantum-accent" />
+                    <ApplicationLogo class="h-9 w-9 shrink-0" />
                     <span class="text-sm font-semibold tracking-tight text-quantum-text-primary sm:text-base">Quantum Quizzes</span>
                 </Link>
 
@@ -270,7 +270,7 @@ const steps = [
         <footer class="border-t border-quantum-stroke/30 bg-quantum-bg-mid py-8">
             <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-quantum-secondary sm:flex-row sm:px-6 lg:px-8">
                 <div class="flex items-center gap-2">
-                    <ApplicationLogo class="h-6 w-auto fill-current text-quantum-accent" />
+                    <ApplicationLogo class="h-6 w-6 shrink-0" />
                     <span>Quantum Quizzes · Learning CMS</span>
                 </div>
                 <p>© {{ new Date().getFullYear() }} Quantum Realm</p>

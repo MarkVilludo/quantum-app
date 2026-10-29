@@ -1,11 +1,12 @@
 <?php
 
 return [
-    'base' => (int) env('QUANTUM_RANK_BASE', 15),
-    'step' => (int) env('QUANTUM_RANK_STEP', 5),
+    // Lower base/step so finishing all 4 years (~1.7k+ XP) lands around level 50–60.
+    'base' => (int) env('QUANTUM_RANK_BASE', 4),
+    'step' => (int) env('QUANTUM_RANK_STEP', 1),
 
     /** Levels 1..N always listed on the student profile rank ladder. */
-    'profile_ladder_through_level' => (int) env('QUANTUM_RANK_PROFILE_LADDER_THROUGH', 40),
+    'profile_ladder_through_level' => (int) env('QUANTUM_RANK_PROFILE_LADDER_THROUGH', 70),
 
     /** Extra levels shown beyond the student's current level. */
     'profile_ladder_extend_above' => (int) env('QUANTUM_RANK_PROFILE_LADDER_EXTEND', 15),

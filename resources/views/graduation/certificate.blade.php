@@ -23,6 +23,7 @@
             box-shadow: 0 0 40px rgba(34, 211, 238, 0.15);
             text-align: center;
         }
+        .logo { display: block; margin: 0 auto 12px; width: 56px; height: 56px; }
         .brand { letter-spacing: 0.35em; font-size: 12px; color: #94a3b8; text-transform: uppercase; }
         h1 {
             margin: 16px 0 8px;
@@ -72,6 +73,13 @@
 <body>
     <button type="button" class="print-btn" onclick="window.print()">Print or save as PDF</button>
     <div class="cert">
+        <svg class="logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <ellipse cx="24" cy="24" rx="20" ry="7" fill="none" stroke="#22D3EE" stroke-width="2" transform="rotate(-25 24 24)"/>
+            <circle cx="24" cy="26" r="9" fill="#6366F1"/>
+            <circle cx="21" cy="23" r="2.5" fill="#818CF8" opacity="0.55"/>
+            <circle cx="10" cy="12" r="1.2" fill="#FBBF24"/>
+            <circle cx="38" cy="14" r="1" fill="#FBBF24"/>
+        </svg>
         <div class="brand">Quantum Realm</div>
         <h1>Certificate of Completion</h1>
         <p class="subtitle">{{ $programTitle }}</p>

@@ -32,7 +32,7 @@ const closeSidebar = () => {
         >
             <div class="flex h-16 items-center border-b border-quantum-stroke px-4">
                 <Link :href="route('dashboard')" class="flex items-center gap-2" @click="closeSidebar">
-                    <ApplicationLogo class="h-8 w-auto fill-current text-quantum-accent" />
+                    <ApplicationLogo class="h-8 w-8 shrink-0" />
                     <span class="text-sm font-semibold text-quantum-text-primary">Quantum CMS</span>
                 </Link>
             </div>

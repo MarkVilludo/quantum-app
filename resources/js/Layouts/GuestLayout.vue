@@ -14,7 +14,7 @@ import { Link } from '@inertiajs/vue3';
             />
             <div>
                 <Link href="/" class="inline-flex items-center gap-2">
-                    <ApplicationLogo class="h-10 w-auto fill-current text-quantum-accent" />
+                    <ApplicationLogo class="h-10 w-10 shrink-0" />
                     <span class="text-lg font-semibold">Quantum Quizzes</span>
                 </Link>
             </div>
@@ -31,7 +31,7 @@ import { Link } from '@inertiajs/vue3';
             <div class="mx-auto w-full max-w-md">
                 <div class="mb-8 text-center lg:hidden">
                     <Link href="/" class="inline-flex flex-col items-center gap-2">
-                        <ApplicationLogo class="h-12 w-auto fill-current text-quantum-primary" />
+                        <ApplicationLogo class="h-12 w-12 shrink-0" />
                         <span class="text-sm font-semibold text-gray-900">Quantum Quizzes</span>
                     </Link>
                 </div>
