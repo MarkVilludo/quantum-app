@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Support\CmsUrl;
+use App\Support\HostingerPaths;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -16,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        HostingerPaths::useSiblingPublicHtmlIfPresent($this->app);
+
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
             \DB::statement('PRAGMA foreign_keys=ON;');
         }

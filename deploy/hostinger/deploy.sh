@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Deploy quantum-app to Hostinger shared (Git Bash / WSL / macOS / Linux).
-# Usage: ./deploy/hostinger/deploy.sh [--skip-build]
+# Usage: ./deploy/hostinger/deploy.sh [--skip-build|--fresh-node]
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -9,21 +9,36 @@ cd "$ROOT"
 SSH_HOST="${HOSTINGER_SSH:-u169091875@46.28.45.172}"
 SSH_PORT="${HOSTINGER_SSH_PORT:-65002}"
 REMOTE_BASE="${HOSTINGER_REMOTE:-domains/quantumrealm.tech}"
-REMOTE_APP="${REMOTE_BASE}/DO_NOT_UPLOAD_HERE"
+REMOTE_APP="${HOSTINGER_APP_DIR:-${REMOTE_BASE}/quantum-app}"
 REMOTE_PUBLIC="${REMOTE_BASE}/public_html"
 
 RSYNC_SSH="ssh -p ${SSH_PORT} -o StrictHostKeyChecking=accept-new"
 
-if [[ "${1:-}" != "--skip-build" ]]; then
-  echo "==> npm ci && npm run build"
-  npm ci
+build_frontend() {
+  if [[ ! -d node_modules ]]; then
+    echo "==> npm install (no node_modules yet)"
+    npm install
+  fi
+  echo "==> npm run build"
   npm run build
-fi
+}
 
-echo "==> composer install (production)"
-composer install --no-dev --optimize-autoloader --no-interaction
+case "${1:-}" in
+  --skip-build) ;;
+  --fresh-node)
+    echo "==> npm ci (stop npm run dev / close editors first on Windows)"
+    npm ci
+    npm run build
+    ;;
+  *)
+    build_frontend
+    ;;
+esac
 
-echo "==> rsync app → DO_NOT_UPLOAD_HERE"
+echo "==> composer install"
+composer install --optimize-autoloader --no-interaction
+
+echo "==> rsync app → ${REMOTE_APP}"
 rsync -avz --delete -e "$RSYNC_SSH" \
   --exclude '.git/' \
   --exclude 'node_modules/' \

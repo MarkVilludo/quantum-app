@@ -1,8 +1,7 @@
 <?php
 
 /**
- * Hostinger shared hosting: document root is public_html; Laravel lives in ../DO_NOT_UPLOAD_HERE
- * Upload this file to: ~/domains/quantumrealm.tech/public_html/index.php
+ * Hostinger shared: document root is public_html; Laravel is ../quantum-app or ../DO_NOT_UPLOAD_HERE
  */
 
 use Illuminate\Contracts\Http\Kernel;
@@ -10,7 +9,21 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-$laravelRoot = dirname(__DIR__).'/DO_NOT_UPLOAD_HERE';
+$domainRoot = dirname(__DIR__);
+$laravelRoot = null;
+
+foreach (['quantum-app', 'DO_NOT_UPLOAD_HERE'] as $dir) {
+    $candidate = $domainRoot.'/'.$dir;
+    if (is_file($candidate.'/artisan')) {
+        $laravelRoot = $candidate;
+        break;
+    }
+}
+
+if ($laravelRoot === null) {
+    http_response_code(500);
+    exit('Laravel application folder not found next to public_html.');
+}
 
 if (file_exists($maintenance = $laravelRoot.'/storage/framework/maintenance.php')) {
     require $maintenance;
