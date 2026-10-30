@@ -12,6 +12,7 @@ use App\Models\SubjectQuizResult;
 use App\Models\Year;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class LessonProgressService
 {
@@ -385,6 +386,7 @@ class LessonProgressService
             $result[] = [
                 'id' => $lesson->id,
                 'name' => $lesson->name,
+                'map_blurb' => $this->mapBlurbForLesson($lesson, $slides),
                 'module_id' => $lesson->module_id,
                 'subject_id' => $lesson->subject_id,
                 'year_id' => $lesson->year_id,
@@ -438,5 +440,30 @@ class LessonProgressService
             'final_quiz_unlocked' => $this->isFinalSubjectQuizUnlocked($userId, $subject->id),
             'final_quiz_passed' => $this->hasPassedFinalSubjectQuiz($userId, $subject->id),
         ];
+    }
+
+    /**
+     * Short line for the mobile module path (CMS map_blurb or first slide title).
+     */
+    public function mapBlurbForLesson(Lesson $lesson, array $slides): ?string
+    {
+        $custom = trim((string) ($lesson->map_blurb ?? ''));
+        if ($custom !== '') {
+            return Str::limit($custom, 120, '…');
+        }
+
+        $first = $slides[0] ?? null;
+        if (is_array($first)) {
+            $title = trim((string) ($first['title'] ?? ''));
+            if ($title !== '') {
+                return Str::limit($title, 120, '…');
+            }
+            $content = trim(strip_tags((string) ($first['content'] ?? '')));
+            if ($content !== '') {
+                return Str::limit($content, 100, '…');
+            }
+        }
+
+        return null;
     }
 }

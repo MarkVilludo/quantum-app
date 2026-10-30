@@ -66,6 +66,7 @@ class LessonController extends Controller
             'subject_id' => 'required',
             'module_id' => 'required',
             'name' => 'required|string|max:255',
+            'map_blurb' => 'nullable|string|max:120',
             'datax' => 'required|array',
             'datax.*.content' => 'required|string',
             'datax.*.title' => 'nullable|string|max:255',
@@ -80,10 +81,12 @@ class LessonController extends Controller
             'subject_id' => $request->subject_id,
             'module_id' => $request->module_id,
             'name' => $request->name,
+            'map_blurb' => $request->input('map_blurb'),
             'data' => $request->datax,
             'activity' => $request->activity,
         ]);
-        dd($lesson);
+
+        return redirect()->route('lessons.index')->with('success', 'Lesson created.');
     }
 
     public function edit($lessonId)
@@ -104,6 +107,7 @@ class LessonController extends Controller
             'subject_id' => 'required',
             'module_id' => 'required',
             'name' => 'required|string|max:255',
+            'map_blurb' => 'nullable|string|max:120',
             'datax' => 'required|array',
             'datax.*.content' => 'required|string',
             'datax.*.title' => 'nullable|string|max:255',
@@ -119,6 +123,7 @@ class LessonController extends Controller
             'subject_id' => $request->subject_id,
             'module_id' => $request->module_id,
             'name' => $request->name,
+            'map_blurb' => $request->input('map_blurb'),
             'data' => $request->datax,
             'activity' => $request->activity,
         ]);

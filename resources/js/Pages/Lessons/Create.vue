@@ -20,6 +20,7 @@ const newLesson = useForm({
     subject_id: null,
     module_id: null,
     name: "",
+    map_blurb: "",
     datax: [{ title: "", content: "" }],
     activity: [{ title: "", question: "", difficulty: "", correct_answer: "" }]
 });
@@ -154,6 +155,14 @@ const goBack = () => {
                         </select>
                         <h1 class="text-xl font-semibold">Name:</h1>
                         <input v-model="newLesson.name" placeholder="Lesson Name" class="border p-2 rounded w-full mb-2" required />
+
+                        <label class="mb-1 block text-sm font-medium text-gray-700">Map hint (optional)</label>
+                        <input
+                            v-model="newLesson.map_blurb"
+                            maxlength="120"
+                            placeholder="One line shown on the app module path under this lesson"
+                            class="border p-2 rounded w-full mb-2"
+                        />
 
                         <h1 class="text-xl font-semibold">Contents:</h1>
                         <div v-for="(section, index) in newLesson.datax" :key="index" class="mb-2 p-2 border rounded">

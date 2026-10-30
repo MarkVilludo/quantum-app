@@ -25,6 +25,7 @@ const editLesson = useForm({
     subject_id: props.lesson ? props.lesson.subject_id : null,
     module_id: props.lesson ? props.lesson.module_id : null,
     name: props.lesson ? props.lesson.name : "",
+    map_blurb: props.lesson ? props.lesson.map_blurb ?? "" : "",
     datax: props.lesson ? props.lesson.data : [{ content: "" }],
     activity: props.lesson ? props.lesson.activity : [{ title: "", question: "", difficulty: "", correct_answer: "" }],
 });
@@ -156,6 +157,14 @@ const selectedModuleName = computed(() => {
 
                         <h1 class="text-xl font-semibold">Name:</h1>
                         <input v-model="editLesson.name" placeholder="Lesson Name" class="border p-2 rounded w-full mb-2" required />
+
+                        <label class="mb-1 block text-sm font-medium text-gray-700">Map hint (optional)</label>
+                        <input
+                            v-model="editLesson.map_blurb"
+                            maxlength="120"
+                            placeholder="One line shown on the app module path under this lesson"
+                            class="border p-2 rounded w-full mb-2"
+                        />
 
                         <h1 class="text-xl font-semibold">Contents:</h1>
                         <div v-for="(section, index) in editLesson.datax" :key="index" class="mb-2 p-2 border rounded">

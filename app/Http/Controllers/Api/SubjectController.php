@@ -49,12 +49,14 @@ class SubjectController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $payload = $subjects->map(function (Subject $subject) {
+        $payload = $subjects->map(function (Subject $subject) use ($userId) {
             return [
                 'id' => $subject->id,
                 'name' => $subject->name,
                 'year_id' => $subject->year_id,
                 'mission' => $this->engagement->defaultMissionForSubject($subject),
+                'final_quiz_unlocked' => $this->progress->isFinalSubjectQuizUnlocked($userId, $subject->id),
+                'final_quiz_passed' => $this->progress->hasPassedFinalSubjectQuiz($userId, $subject->id),
             ];
         });
 

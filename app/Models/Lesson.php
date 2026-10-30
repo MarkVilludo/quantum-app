@@ -17,6 +17,7 @@ class Lesson extends Model
         'subject_id',
         'module_id',
         'name',
+        'map_blurb',
         'data',
         'content',
         'activity',
