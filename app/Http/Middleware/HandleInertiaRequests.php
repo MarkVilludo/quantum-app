@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\MobileAppReleaseService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -34,6 +35,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+            ],
+            'androidApp' => fn () => app(MobileAppReleaseService::class)->publicMeta(),
         ];
     }
 }

@@ -17,6 +17,7 @@ const props = defineProps({
 });
 
 const role = computed(() => usePage().props.auth.user?.role);
+const androidApp = computed(() => usePage().props.androidApp);
 const showGraduationAnalytics = computed(
     () =>
         (role.value === 'admin' || role.value === 'teacher') &&
@@ -42,6 +43,18 @@ const showGraduationAnalytics = computed(
                     <p class="text-sm font-medium text-gray-500">Signed in as</p>
                     <p class="mt-1 text-xl font-semibold capitalize text-gray-900">{{ role }}</p>
                 </div>
+
+                <a
+                    v-if="androidApp?.available"
+                    href="/download/android"
+                    class="rounded-xl border border-quantum-accent/40 bg-gradient-to-br from-cyan-50 to-white p-6 shadow-sm transition hover:border-quantum-accent hover:shadow-md"
+                >
+                    <p class="text-sm font-medium text-quantum-accent">Mobile app</p>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">Download latest APK</p>
+                    <p class="mt-2 text-xs text-gray-500">
+                        v{{ androidApp.version_name }}<span v-if="androidApp.size_human"> · {{ androidApp.size_human }}</span>
+                    </p>
+                </a>
 
                 <Link
                     v-if="role === 'teacher'"

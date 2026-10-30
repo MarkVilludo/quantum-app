@@ -45,6 +45,18 @@ Use **MySQL** from hPanel (not SQLite). Run `composer install` **with** dev depe
 
 Set **PHP 8.1+** in hPanel → **PHP Configuration**.
 
+## Android app (`QuantumRealm`)
+
+In `QuantumRealm/gradle.properties`:
+
+```properties
+API_BASE_URL=https://quantumrealm.tech
+```
+
+Rebuild and reinstall the APK. Requests go to `https://quantumrealm.tech/api/...`. For local Laravel dev, switch back to `http://10.0.2.2:8000` (emulator) or your PC LAN IP.
+
+Ensure server `.env` has `APP_URL=https://quantumrealm.tech` and `CMS_URL=https://quantumrealm.tech` so password-reset and verification links match the app base URL.
+
 ## After `git pull` on the server
 
 ```bash

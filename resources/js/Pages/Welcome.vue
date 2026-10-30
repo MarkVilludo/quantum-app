@@ -1,6 +1,10 @@
 <script setup>
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage();
+const androidApp = computed(() => page.props.androidApp ?? { available: false, download_url: '/download/android' });
 
 defineProps({
     canLogin: {
@@ -64,20 +68,31 @@ const steps = [
                     <span class="text-sm font-semibold tracking-tight text-quantum-text-primary sm:text-base">Quantum Quizzes</span>
                 </Link>
 
-                <nav v-if="canLogin" class="flex items-center gap-2 sm:gap-3">
-                    <template v-if="$page.props.auth.user">
-                        <Link :href="route('dashboard')" class="qr-btn-primary">Dashboard</Link>
-                    </template>
-                    <template v-else>
-                        <Link :href="route('login')" class="qr-btn-secondary border-quantum-stroke bg-quantum-surface text-quantum-text-primary hover:bg-quantum-surface-up">Log in</Link>
-                        <Link
-                            v-if="canRegister"
-                            :href="route('register')"
-                            class="qr-btn-primary qr-animate-cta"
-                        >
-                            Get started
-                        </Link>
-                        <Link v-if="!canRegister" :href="route('login')" class="qr-btn-primary">Log in</Link>
+                <nav class="flex items-center gap-2 sm:gap-3">
+                    <a
+                        v-if="androidApp?.available"
+                        href="/download/android"
+                        class="qr-btn-primary inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs sm:gap-2 sm:px-4 sm:text-sm"
+                    >
+                        <svg class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download APK
+                    </a>
+                    <template v-if="canLogin">
+                        <template v-if="$page.props.auth.user">
+                            <Link :href="route('dashboard')" class="qr-btn-secondary border-quantum-stroke bg-quantum-surface text-quantum-text-primary hover:bg-quantum-surface-up">Dashboard</Link>
+                        </template>
+                        <template v-else>
+                            <Link :href="route('login')" class="qr-btn-secondary border-quantum-stroke bg-quantum-surface text-quantum-text-primary hover:bg-quantum-surface-up">Log in</Link>
+                            <Link
+                                v-if="canRegister"
+                                :href="route('register')"
+                                class="qr-btn-secondary hidden sm:inline-flex"
+                            >
+                                Get started
+                            </Link>
+                        </template>
                     </template>
                 </nav>
             </div>
@@ -108,28 +123,27 @@ const steps = [
                     <p class="mx-auto mt-6 max-w-xl text-lg text-quantum-secondary lg:mx-0">
                         Interactive module lessons, quizzes, and live progress—built for students, teachers, and admins in one connected platform.
                     </p>
-                    <div
-                        v-if="canLogin && !$page.props.auth.user"
-                        class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start"
-                    >
-                        <Link :href="route('login')" class="qr-btn-primary qr-animate-cta w-full sm:w-auto px-8">
-                            Sign in to CMS
-                        </Link>
+                    <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
                         <Link
-                            v-if="canRegister"
-                            :href="route('register')"
-                            class="qr-btn-secondary w-full sm:w-auto px-8"
+                            v-if="$page.props.auth.user"
+                            :href="route('dashboard')"
+                            class="qr-btn-primary qr-animate-cta w-full sm:w-auto px-8"
                         >
-                            Create account
+                            Open dashboard
                         </Link>
+                        <template v-else-if="canLogin">
+                            <Link :href="route('login')" class="qr-btn-primary qr-animate-cta w-full sm:w-auto px-8">
+                                Sign in to CMS
+                            </Link>
+                            <Link
+                                v-if="canRegister"
+                                :href="route('register')"
+                                class="qr-btn-secondary w-full sm:w-auto px-8"
+                            >
+                                Create account
+                            </Link>
+                        </template>
                     </div>
-                    <Link
-                        v-else-if="$page.props.auth.user"
-                        :href="route('dashboard')"
-                        class="qr-btn-primary qr-animate-cta mt-8 inline-flex"
-                    >
-                        Open dashboard
-                    </Link>
                 </div>
 
                 <!-- Animated hero visual -->

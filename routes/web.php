@@ -15,6 +15,7 @@ use App\Http\Controllers\CMS\{
     StudentController,
     StudentProgressionController,
     DashboardController,
+    MobileAppReleaseController,
 };
 
 use Inertia\Inertia;
@@ -38,6 +39,9 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/download/android', [MobileAppReleaseController::class, 'download'])
+    ->name('android-app.download');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
@@ -107,6 +111,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdminController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
+
+    Route::get('/admin/mobile-app', [MobileAppReleaseController::class, 'edit'])->name('admin.mobile-app.edit');
+    Route::post('/admin/mobile-app', [MobileAppReleaseController::class, 'store'])->name('admin.mobile-app.store');
 
 
     //student quiz results
