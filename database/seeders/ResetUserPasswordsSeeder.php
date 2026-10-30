@@ -23,7 +23,10 @@ class ResetUserPasswordsSeeder extends Seeder
         $this->ensureSecondYearTeacher();
 
         User::query()->withTrashed()->each(function (User $user) {
-            $user->forceFill(['password' => 'password'])->saveQuietly();
+            $user->forceFill([
+                'password' => 'password',
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ])->saveQuietly();
         });
 
         $this->command?->info('All user passwords set to "password".');

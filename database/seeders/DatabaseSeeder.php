@@ -25,11 +25,15 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Admin User',
                 'password' => 'password',
                 'role' => 'admin',
+                'email_verified_at' => now(),
             ]
         );
 
         if ($admin->trashed()) {
             $admin->restore();
+        }
+        if (! $admin->hasVerifiedEmail()) {
+            $admin->forceFill(['email_verified_at' => now()])->saveQuietly();
         }
 
         if (\App\Models\User::withTrashed()->where('role', 'teacher')->doesntExist()) {
@@ -40,5 +44,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(ResetUserPasswordsSeeder::class);
+        $this->call(AndrewVilludoUserSeeder::class);
     }
 }

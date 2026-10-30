@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
@@ -54,5 +54,23 @@ class User extends Authenticatable
     public function year()
     {
         return $this->belongsTo(Year::class, 'year_id');
+    }
+
+    public static function normalizeEmail(string $email): string
+    {
+        return strtolower(trim($email));
+    }
+
+    public static function findByEmail(string $email): ?self
+    {
+        $normalized = self::normalizeEmail($email);
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return static::query()
+            ->whereRaw('LOWER(email) = ?', [$normalized])
+            ->first();
     }
 }

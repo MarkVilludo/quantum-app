@@ -3,7 +3,7 @@
 
 Hello {{ $name }},
 
-We received a request to reset the password for your **Quantum Quizzes** account. Use the button below to choose a new password — it works on the website and in the mobile app.
+We received a request to reset the password for your **Quantum Quizzes** account. Use the button below to open the **CMS** and choose a new password (same site as the teacher/student web portal).
 
 <x-mail::button :url="$actionUrl" color="primary">
 {{ $actionText }}

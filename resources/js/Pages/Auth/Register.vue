@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 const form = useForm({
     name: '',
@@ -14,10 +15,90 @@ const form = useForm({
     password_confirmation: '',
 });
 
+const nameClientError = ref('');
+const passwordClientError = ref('');
+
+const NAME_LETTERS_AND_SPACES = /^[\p{L}\s]*$/u;
+
+watch(
+    () => form.name,
+    (value) => {
+        if (!value) {
+            nameClientError.value = '';
+            return;
+        }
+
+        let next = value;
+
+        if (/\d/.test(next)) {
+            nameClientError.value = 'Name cannot contain numbers.';
+            next = next.replace(/\d/g, '');
+        } else if (!NAME_LETTERS_AND_SPACES.test(next)) {
+            nameClientError.value = 'Name cannot contain numbers or special characters.';
+            next = next.replace(/[^\p{L}\s]/gu, '');
+        } else {
+            nameClientError.value = '';
+        }
+
+        if (next !== value) {
+            form.name = next;
+        }
+    },
+);
+
+watch(
+    () => form.password,
+    (value) => {
+        if (value.length > 0 && value.length < 8) {
+            passwordClientError.value = 'Password must be at least 8 characters long.';
+        } else {
+            passwordClientError.value = '';
+        }
+    },
+);
+
+function validateBeforeSubmit() {
+    nameClientError.value = '';
+    passwordClientError.value = '';
+
+    const trimmedName = form.name.trim();
+
+    if (!trimmedName) {
+        nameClientError.value = 'Enter your name.';
+        return false;
+    }
+
+    if (/\d/.test(trimmedName)) {
+        nameClientError.value = 'Name cannot contain numbers.';
+        return false;
+    }
+
+    if (!/^[\p{L}\s]+$/u.test(trimmedName)) {
+        nameClientError.value = 'Name cannot contain numbers or special characters.';
+        return false;
+    }
+
+    if (form.password.length < 8) {
+        passwordClientError.value = 'Password must be at least 8 characters long.';
+        return false;
+    }
+
+    return true;
+}
+
 const submit = () => {
-    form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
-    });
+    if (!validateBeforeSubmit()) {
+        return;
+    }
+
+    form
+        .transform((data) => ({
+            ...data,
+            name: data.name.trim(),
+        }))
+        .post(route('register'), {
+            onFinish: () => form.reset('password', 'password_confirmation'),
+        });
 };
 </script>
 
@@ -41,7 +122,7 @@ const submit = () => {
                     autocomplete="name"
                 />
 
-                <InputError class="mt-2" :message="form.errors.name" />
+                <InputError class="mt-2" :message="nameClientError || form.errors.name" />
             </div>
 
             <div class="mt-4">
@@ -87,7 +168,10 @@ const submit = () => {
                     autocomplete="new-password"
                 />
 
-                <InputError class="mt-2" :message="form.errors.password" />
+                <p v-if="!passwordClientError && !form.errors.password" class="mt-1 text-xs text-gray-500">
+                    At least 8 characters.
+                </p>
+                <InputError class="mt-2" :message="passwordClientError || form.errors.password" />
             </div>
 
             <div class="mt-4">

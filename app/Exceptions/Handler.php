@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,5 +27,14 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    protected function shouldReturnJson($request, Throwable $e): bool
+    {
+        if ($request instanceof Request && $request->is('api/*')) {
+            return true;
+        }
+
+        return parent::shouldReturnJson($request, $e);
     }
 }

@@ -57,6 +57,18 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | CMS / web URL (password reset emails, links opened in browser)
+    |--------------------------------------------------------------------------
+    |
+    | Use the URL where users open the Inertia CMS (e.g. http://127.0.0.1:8000).
+    | On a phone reading email, set this to your PC's LAN IP, not 127.0.0.1.
+    |
+    */
+
+    'cms_url' => env('CMS_URL', env('APP_URL', 'http://localhost')),
+
     'asset_url' => env('ASSET_URL'),
 
     /*

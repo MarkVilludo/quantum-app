@@ -21,7 +21,11 @@ class AuthenticatedSessionController extends Controller
     {
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
-            'status' => session('status'),
+            'status' => match (session('status')) {
+                'email-verified' => 'Your email is verified. You can sign in now.',
+                'email-already-verified' => 'Your email was already verified. Sign in to continue.',
+                default => session('status'),
+            },
         ]);
     }
 
