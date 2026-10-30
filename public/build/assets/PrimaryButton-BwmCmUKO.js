@@ -1,1 +1,0 @@
-import{_ as t}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as e,o,p as s}from"./app-DFYGjptq.js";const n={},c={class:"qr-btn-primary font-semibold uppercase tracking-wide"};function a(r,i){return o(),e("button",c,[s(r.$slots,"default")])}const p=t(n,[["render",a]]);export{p as P};

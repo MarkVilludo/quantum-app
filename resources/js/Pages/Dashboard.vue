@@ -1,10 +1,28 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import GraduationCertificatesChart from '@/Components/Dashboard/GraduationCertificatesChart.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+const props = defineProps({
+    graduationAnalytics: {
+        type: Object,
+        default: null,
+    },
+    analyticsFilters: {
+        type: Object,
+        default: null,
+    },
+});
+
 const role = computed(() => usePage().props.auth.user?.role);
+const showGraduationAnalytics = computed(
+    () =>
+        (role.value === 'admin' || role.value === 'teacher') &&
+        props.graduationAnalytics &&
+        props.analyticsFilters,
+);
 </script>
 
 <template>
@@ -79,6 +97,12 @@ const role = computed(() => usePage().props.auth.user?.role);
                     <p class="mt-1 text-lg font-semibold text-quantum-primary">Student levels &amp; EXP</p>
                 </Link>
             </div>
+
+            <GraduationCertificatesChart
+                v-if="showGraduationAnalytics"
+                :analytics="graduationAnalytics"
+                :filters="analyticsFilters"
+            />
         </div>
     </AuthenticatedLayout>
 </template>
