@@ -1,103 +1,85 @@
 # Hostinger shared: `quantumrealm.tech`
 
-Recommended layout (git clone or rsync):
+## Layouts (both supported)
+
+**A — hPanel Git** (subfolder `quantum-app` under `public_html`):
+
+```text
+~/domains/quantumrealm.tech/public_html/
+├── index.php              ← from deploy/hostinger/public_html/index.php
+├── .htaccess, build/, …   ← copied from app public/
+└── quantum-app/           ← Git deploy target (artisan, app/, .env)
+```
+
+**B — SSH clone / rsync** (app beside `public_html`):
 
 ```text
 ~/domains/quantumrealm.tech/
-├── quantum-app/            ← Laravel root (git clone here)
-└── public_html/            ← Document root (contents of public/)
+├── quantum-app/           ← Laravel root
+└── public_html/           ← contents of public/ + index.php
 ```
 
-Hostinger also creates `DO_NOT_UPLOAD_HERE/` on new sites; this app supports **either** `quantum-app` or `DO_NOT_UPLOAD_HERE` as the Laravel folder name.
+Do **not** deploy the whole repo into `public_html/` with an empty subfolder — that causes **403**.
 
-Do **not** put `app/`, `.env`, or `vendor/` inside `public_html`.
+## hPanel Git deploy
 
-## Vite / `public_html` split
+1. **Websites → quantumrealm.tech → Advanced → GIT**
+2. **Change root directory → Add subfolder:** `quantum-app` (not blank)
+3. **Redeploy** after each push to `main`
 
-The web server serves `public_html/`, but Laravel’s default `public/` path is inside `quantum-app/public/`. After you copy assets to `public_html`, **`HostingerPaths`** (in `AppServiceProvider`) points Laravel at sibling `../public_html` so Vite reads `public_html/build/manifest.json`.
-
-You do **not** need a duplicate `build/` under `quantum-app/public/` when that code is deployed. Remove the extra top-level `~/domains/quantumrealm.tech/public/` folder if you created one by mistake—it is not used.
-
-## Clone on the server
+Git does **not** run Composer or copy `public/` to the web root. After every redeploy, SSH:
 
 ```bash
-cd ~/domains/quantumrealm.tech
-git clone https://github.com/MarkVilludo/quantum-app.git quantum-app
-cp -a quantum-app/public/. public_html/
-cp quantum-app/deploy/hostinger/public_html/index.php public_html/index.php
+ssh -p 65002 u169091875@46.28.45.172
+cd ~/domains/quantumrealm.tech/public_html/quantum-app
+chmod +x deploy/hostinger/post-deploy.sh
+./deploy/hostinger/post-deploy.sh
 ```
 
-## First-time setup (SSH)
+Or run the same steps manually:
 
 ```bash
-cd ~/domains/quantumrealm.tech/quantum-app
+cd ~/domains/quantumrealm.tech/public_html/quantum-app
 composer install --optimize-autoloader --no-interaction
-cp deploy/hostinger/.env.production.example .env
-nano .env   # DB + mail from hPanel
-php artisan key:generate
+cp -a public/. ..
+cp deploy/hostinger/public_html/index.php ../index.php
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
 chmod -R ug+rwx storage bootstrap/cache
-php artisan migrate --force
-php artisan storage:link   # link targets public_html when HostingerPaths is active
-php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
-Use **MySQL** from hPanel (not SQLite). Run `composer install` **with** dev dependencies on shared hosting so Artisan has `fakerphp/faker` (avoid `--no-dev` unless you add Faker to production deps).
+Ensure **`.env`** exists in `public_html/quantum-app/` (MySQL from hPanel, `APP_URL=https://quantumrealm.tech`).
 
-Set **PHP 8.1+** in hPanel → **PHP Configuration**.
+## Vite / `public_html`
 
-## Android app (`QuantumRealm`)
+**HostingerPaths** points Laravel at the real document root (`public_html`) so Vite uses `public_html/build/manifest.json`.
 
-In `QuantumRealm/gradle.properties`:
-
-```properties
-API_BASE_URL=https://quantumrealm.tech
-```
-
-Rebuild and reinstall the APK. Requests go to `https://quantumrealm.tech/api/...`. For local Laravel dev, switch back to `http://10.0.2.2:8000` (emulator) or your PC LAN IP.
-
-Ensure server `.env` has `APP_URL=https://quantumrealm.tech` and `CMS_URL=https://quantumrealm.tech` so password-reset and verification links match the app base URL.
-
-## After `git pull` on the server
+## First-time `.env`
 
 ```bash
-cd ~/domains/quantumrealm.tech/quantum-app
-git pull
-composer install --optimize-autoloader --no-interaction
-cp -a public/. ../public_html/
-cp deploy/hostinger/public_html/index.php ../public_html/index.php
-php artisan migrate --force
-php artisan config:clear
-php artisan config:cache && php artisan route:cache && php artisan view:cache
+cd ~/domains/quantumrealm.tech/public_html/quantum-app
+cp deploy/hostinger/.env.production.example .env
+nano .env
+php artisan key:generate
 ```
 
-If `quantum-app/public/*` was deleted locally after copying to `public_html`, restore tracked files without wiping the server web root:
+Use **MySQL** (not SQLite). PHP **8.1+** in hPanel.
+
+## Android app
+
+`API_BASE_URL=https://quantumrealm.tech` in `QuantumRealm/gradle.properties`. Server `.env`: `APP_URL` and `CMS_URL` = `https://quantumrealm.tech`.
+
+## Deploy from your PC (rsync layout B)
 
 ```bash
-git restore public/
-cp -a public/. ../public_html/
-```
-
-## Deploy from your PC (Git Bash)
-
-```bash
-chmod +x deploy/hostinger/deploy.sh
+export HOSTINGER_APP_DIR=domains/quantumrealm.tech/quantum-app
 ./deploy/hostinger/deploy.sh
 ```
 
-Optional:
-
-```bash
-export HOSTINGER_SSH=u169091875@46.28.45.172
-export HOSTINGER_SSH_PORT=65002
-export HOSTINGER_REMOTE=domains/quantumrealm.tech
-export HOSTINGER_APP_DIR=domains/quantumrealm.tech/quantum-app
-```
-
-**Windows:** Stop `npm run dev` before building. Use `--skip-build` if `public/build` is already fresh.
+For Git layout A, prefer hPanel redeploy + `post-deploy.sh` on the server.
 
 ## hPanel checklist
 
-- [ ] SSL for `quantumrealm.tech`
-- [ ] PHP 8.1+
-- [ ] MySQL in `.env`
-- [ ] Cron (optional): `* * * * * php ~/domains/quantumrealm.tech/quantum-app/artisan schedule:run`
+- [ ] Git subfolder = `quantum-app` (not blank `public_html`)
+- [ ] SSL, PHP 8.1+, MySQL in `.env`
+- [ ] APK: Admin → Android app or `php artisan mobile-app:import-apk`

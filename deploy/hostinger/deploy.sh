@@ -9,7 +9,7 @@ cd "$ROOT"
 SSH_HOST="${HOSTINGER_SSH:-u169091875@46.28.45.172}"
 SSH_PORT="${HOSTINGER_SSH_PORT:-65002}"
 REMOTE_BASE="${HOSTINGER_REMOTE:-domains/quantumrealm.tech}"
-REMOTE_APP="${HOSTINGER_APP_DIR:-${REMOTE_BASE}/quantum-app}"
+REMOTE_APP="${HOSTINGER_APP_DIR:-${REMOTE_BASE}/public_html/quantum-app}"
 REMOTE_PUBLIC="${REMOTE_BASE}/public_html"
 
 RSYNC_SSH="ssh -p ${SSH_PORT} -o StrictHostKeyChecking=accept-new"

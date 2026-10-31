@@ -1,7 +1,11 @@
 <?php
 
 /**
- * Hostinger shared: document root is public_html; Laravel is ../quantum-app or ../DO_NOT_UPLOAD_HERE
+ * Hostinger shared hosting bootstrap for public_html/index.php
+ *
+ * Supports:
+ * - hPanel Git → public_html/quantum-app/
+ * - SSH clone → ../quantum-app/ or ../DO_NOT_UPLOAD_HERE/ next to public_html
  */
 
 use Illuminate\Contracts\Http\Kernel;
@@ -9,20 +13,28 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-$domainRoot = dirname(__DIR__);
+$publicHtml = __DIR__;
 $laravelRoot = null;
 
-foreach (['quantum-app', 'DO_NOT_UPLOAD_HERE'] as $dir) {
-    $candidate = $domainRoot.'/'.$dir;
-    if (is_file($candidate.'/artisan')) {
-        $laravelRoot = $candidate;
-        break;
+$nested = $publicHtml.'/quantum-app';
+if (is_file($nested.'/artisan')) {
+    $laravelRoot = $nested;
+}
+
+if ($laravelRoot === null) {
+    $domainRoot = dirname($publicHtml);
+    foreach (['quantum-app', 'DO_NOT_UPLOAD_HERE'] as $dir) {
+        $candidate = $domainRoot.'/'.$dir;
+        if (is_file($candidate.'/artisan')) {
+            $laravelRoot = $candidate;
+            break;
+        }
     }
 }
 
 if ($laravelRoot === null) {
     http_response_code(500);
-    exit('Laravel application folder not found next to public_html.');
+    exit('Laravel application folder not found (expected public_html/quantum-app or ../quantum-app).');
 }
 
 if (file_exists($maintenance = $laravelRoot.'/storage/framework/maintenance.php')) {
