@@ -15,7 +15,6 @@ const roleLabel = computed(() => {
     const labels = { admin: 'Administrator', teacher: 'Teacher', student: 'Student' };
     return labels[role.value] ?? role.value;
 });
-const androidApp = computed(() => page.props.androidApp);
 </script>
 
 <template>
@@ -92,31 +91,7 @@ const androidApp = computed(() => page.props.androidApp);
                         </template>
                         Users
                     </SidebarNavLink>
-                    <SidebarNavLink
-                        :href="route('admin.mobile-app.edit')"
-                        :active="route().current('admin.mobile-app.*')"
-                        @click="closeSidebar"
-                    >
-                        <template #icon>
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                        </template>
-                        Android app
-                    </SidebarNavLink>
                 </template>
-
-                <a
-                    v-if="androidApp?.available"
-                    href="/download/android"
-                    class="flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-quantum-secondary hover:bg-quantum-surface hover:text-quantum-text-primary"
-                    @click="closeSidebar"
-                >
-                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    <span>Download APK</span>
-                </a>
 
                 <template v-if="role === 'teacher'">
                     <p class="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-quantum-muted">Content</p>
