@@ -32,6 +32,7 @@ chmod -R ug+rwx storage bootstrap/cache 2>/dev/null || true
 
 echo "==> migrate & cache"
 php artisan migrate --force
+php artisan mobile-app:ensure-bundled
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
