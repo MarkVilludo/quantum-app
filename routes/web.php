@@ -125,3 +125,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-progression', [StudentProgressionController::class, 'myProgression'])->name('my-progression.index');
     Route::get('/my-certificate', [StudentProgressionController::class, 'certificate'])->name('my-certificate');
 });
+
+Route::get('/smtp-test', function () {
+    \Illuminate\Support\Facades\Mail::raw(
+        'QuantumRealm SMTP test successful!',
+        fn($message) => $message
+            ->to('andrewvilludo321@gmail.com')
+            ->subject('QuantumRealm SMTP Test')
+    );
+
+    return 'Email sent successfully!';
+});
