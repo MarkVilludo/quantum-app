@@ -13,15 +13,19 @@ class EnsureBundledMobileAppRelease extends Command
     protected $signature = 'mobile-app:ensure-bundled
                             {--force : Register bundled APK even when another current release exists}';
 
-    protected $description = 'Register the git-tracked APK in the database so the homepage download button appears';
+    protected $description = 'Register the bundled APK in the database so the homepage download button appears';
 
     public function handle(MobileAppReleaseService $releases): int
     {
         $diskPath = (string) config('mobile-app.bundled_disk_path', 'mobile-app/QuantumRealm.apk');
         $disk = Storage::disk('public');
 
-        if (! $disk->exists($diskPath)) {
-            $this->error('Bundled APK missing at storage/app/public/'.$diskPath);
+        if (! $this->ensureApkOnPublicDisk($disk, $diskPath)) {
+            $this->error('APK not found. Expected storage/app/public/'.$diskPath);
+            $source = config('mobile-app.source_apk');
+            if (is_string($source) && $source !== '') {
+                $this->line('MOBILE_APP_SOURCE_APK='.$source);
+            }
 
             return self::FAILURE;
         }
@@ -52,8 +56,32 @@ class EnsureBundledMobileAppRelease extends Command
             ]);
         });
 
-        $this->info('Registered bundled APK for download ('.$versionName.').');
+        $this->info('Registered APK at '.$diskPath.' for download ('.$versionName.').');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Ensure the bundled relative path exists on the public disk, copying from MOBILE_APP_SOURCE_APK if needed.
+     */
+    private function ensureApkOnPublicDisk($disk, string $diskPath): bool
+    {
+        if ($disk->exists($diskPath)) {
+            return true;
+        }
+
+        $source = config('mobile-app.source_apk');
+        if (! is_string($source) || $source === '' || ! is_readable($source)) {
+            return false;
+        }
+
+        $directory = dirname($diskPath);
+        if ($directory !== '.' && $directory !== '') {
+            $disk->makeDirectory($directory);
+        }
+
+        $disk->put($diskPath, file_get_contents($source));
+
+        return $disk->exists($diskPath);
     }
 }
