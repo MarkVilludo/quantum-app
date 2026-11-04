@@ -15,11 +15,13 @@ class StudentEngagementService
 {
     public const DAILY_LESSON_GOAL = 1;
 
+    /** @deprecated Use curriculum-scaled XP via CurriculumXpService */
     public const LESSON_XP = 15;
 
     public function __construct(
         private LessonProgressService $progress,
         private QuantumRankService $ranks,
+        private CurriculumXpService $curriculumXp,
     ) {
     }
 
@@ -29,10 +31,8 @@ class StudentEngagementService
 
         if ($firstCompletion) {
             $this->touchDailyActivity($user, true);
-            $user->quantum_xp = $previousXp + self::LESSON_XP;
-            $user->save();
 
-            return $this->buildEngagementPayload($user, self::LESSON_XP, $previousXp);
+            return $this->applyCurriculumXp($user, $previousXp);
         }
 
         return $this->buildEngagementPayload($user, 0, $previousXp);
@@ -47,12 +47,18 @@ class StudentEngagementService
         }
 
         $this->touchDailyActivity($user, false);
-        $bonus = $percent >= 100 ? 25 : ($percent >= 80 ? 15 : 0);
-        $xp = 50 + $bonus;
-        $user->quantum_xp = $previousXp + $xp;
+
+        return $this->applyCurriculumXp($user, $previousXp);
+    }
+
+    /** @return array{xp_awarded: int, total_xp: int, rank: array, leveled_up: bool, previous_level: int} */
+    private function applyCurriculumXp(User $user, int $previousXp): array
+    {
+        $newXp = $this->curriculumXp->quantumXpForUser((int) $user->id);
+        $user->quantum_xp = $newXp;
         $user->save();
 
-        return $this->buildEngagementPayload($user, $xp, $previousXp);
+        return $this->buildEngagementPayload($user, max(0, $newXp - $previousXp), $previousXp);
     }
 
     public function celebrationVariant(?array $engagement, string $default = 'xp'): string

@@ -116,7 +116,7 @@ watch([searchQuery, yearFilter], () => {
                                         <div
                                             class="h-full rounded-full bg-gradient-to-r from-quantum-primary to-quantum-accent transition-all"
                                             :style="{
-                                                width: `${Math.min(100, Math.round((student.xp_in_level / Math.max(1, student.xp_for_next_level)) * 100))}%`,
+                                                width: `${student.level_progress_percent ?? Math.min(100, Math.floor((student.xp_in_level / Math.max(1, student.xp_for_next_level)) * 100))}%`,
                                             }"
                                         />
                                     </div>

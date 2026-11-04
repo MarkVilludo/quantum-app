@@ -22,9 +22,12 @@ const xpRewards = computed(() => rankLadder.value.xp_rewards ?? []);
 const nextLevel = computed(() => rankLadder.value.next_level ?? null);
 
 const levelProgress = computed(() => {
+    if (typeof props.rank?.level_progress_percent === 'number') {
+        return props.rank.level_progress_percent;
+    }
     const inLevel = props.rank?.xp_in_level ?? 0;
     const forNext = Math.max(1, props.rank?.xp_for_next_level ?? 1);
-    return Math.min(100, Math.round((inLevel / forNext) * 100));
+    return Math.min(100, Math.floor((inLevel / forNext) * 100));
 });
 
 const formatLevelRange = (band) => {
@@ -115,6 +118,15 @@ onUnmounted(() => {
                         {{ nextLevel.title }} · Level {{ nextLevel.level }} —
                         <span class="text-quantum-gold">{{ nextLevel.xp_remaining }} XP</span> to go
                         ({{ nextLevel.total_xp_required }} total XP)
+                    </p>
+                </div>
+                <div
+                    v-else-if="rank?.at_max_level"
+                    class="mt-6 rounded-xl border border-quantum-gold/40 bg-quantum-bg-dark/40 p-4 text-sm"
+                >
+                    <p class="font-semibold text-quantum-gold">Maximum level reached</p>
+                    <p class="mt-1 text-quantum-text-primary">
+                        Level {{ rank?.level ?? 100 }} · {{ rank?.title }} — you have earned all Quantum XP available in the Learning Galaxy.
                     </p>
                 </div>
             </section>

@@ -12,11 +12,14 @@ class CmsStudentProgressionService
     public function __construct(
         private QuantumRankService $ranks,
         private GraduationService $graduation,
+        private CurriculumXpService $curriculumXp,
     ) {
     }
 
     public function progressionPayloadForUser(User $user): array
     {
+        $this->reconcileQuantumXp($user);
+
         $totalXp = (int) $user->quantum_xp;
         $rank = $this->ranks->progressFromTotalXp($totalXp);
         $ladder = $this->ranks->profileLadder($totalXp);
@@ -30,8 +33,20 @@ class CmsStudentProgressionService
             'quantum_xp' => $totalXp,
             'rank' => $rank,
             'rank_ladder' => $this->mobileRankLadder($ladder),
+            'curriculum_progress' => $this->curriculumXp->curriculumProgressForUser((int) $user->id),
             'graduation' => $this->safeGraduationPayload($user),
         ];
+    }
+
+    private function reconcileQuantumXp(User $user): void
+    {
+        $expected = $this->curriculumXp->quantumXpForUser((int) $user->id);
+        if ((int) $user->quantum_xp === $expected) {
+            return;
+        }
+
+        $user->quantum_xp = $expected;
+        $user->save();
     }
 
     /** @param  array<string, mixed>  $ladder */
@@ -87,6 +102,7 @@ class CmsStudentProgressionService
         $paginator = $query->paginate(15)->withQueryString();
 
         $paginator->getCollection()->transform(function (User $student) {
+            $this->reconcileQuantumXp($student);
             $totalXp = (int) $student->quantum_xp;
             $rank = $this->ranks->progressFromTotalXp($totalXp);
 
@@ -101,6 +117,7 @@ class CmsStudentProgressionService
                 'title' => $rank['title'],
                 'xp_in_level' => $rank['xp_in_level'],
                 'xp_for_next_level' => $rank['xp_for_next_level'],
+                'level_progress_percent' => $rank['level_progress_percent'],
             ];
         });
 

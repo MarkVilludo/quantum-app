@@ -4,6 +4,19 @@ namespace App\Services;
 
 class QuantumRankService
 {
+    public function maxLevel(): int
+    {
+        return max(1, (int) config('quantum_rank.max_level', 100));
+    }
+
+    /** Total XP at level 100 with the level bar full (curriculum completion target). */
+    public function maxTotalXp(): int
+    {
+        $cap = $this->maxLevel();
+
+        return max(0, $this->xpToReachLevel($cap + 1) - 1);
+    }
+
     public function xpDeltaForLevel(int $level): int
     {
         $base = (int) config('quantum_rank.base', 15);
@@ -28,29 +41,44 @@ class QuantumRankService
 
     public function levelFromTotalXp(int $xp): int
     {
+        $cap = $this->maxLevel();
         $level = 1;
-        while ($this->xpToReachLevel($level + 1) <= $xp) {
+        while ($level < $cap && $this->xpToReachLevel($level + 1) <= $xp) {
             $level++;
         }
 
         return $level;
     }
 
-    /** @return array{level: int, title: string, title_band_min: int, xp_in_level: int, xp_for_next_level: int, total_xp: int} */
+    /** @return array{level: int, title: string, title_band_min: int, xp_in_level: int, xp_for_next_level: int, level_progress_percent: int, total_xp: int, at_max_level: bool} */
     public function progressFromTotalXp(int $xp): array
     {
-        $xp = max(0, $xp);
+        $xp = max(0, min($xp, $this->maxTotalXp()));
         $level = $this->levelFromTotalXp($xp);
         $floor = $this->xpToReachLevel($level);
         $nextThreshold = $this->xpToReachLevel($level + 1);
+        $delta = max(1, $nextThreshold - $floor);
+        $atMaxLevel = $level >= $this->maxLevel();
+        $atMaxXp = $xp >= $this->maxTotalXp();
+
+        $rawInLevel = max(0, $xp - $floor);
+        if ($atMaxLevel && $atMaxXp) {
+            $xpInLevel = $delta;
+        } else {
+            $xpInLevel = min($delta, $rawInLevel);
+        }
+
+        $levelProgressPercent = (int) min(100, max(0, (int) floor(($xpInLevel / $delta) * 100)));
 
         return [
             'level' => $level,
             'title' => $this->titleForLevel($level),
             'title_band_min' => $this->titleBandMinForLevel($level),
-            'xp_in_level' => $xp - $floor,
-            'xp_for_next_level' => max(1, $nextThreshold - $floor),
+            'xp_in_level' => $xpInLevel,
+            'xp_for_next_level' => $delta,
+            'level_progress_percent' => $levelProgressPercent,
             'total_xp' => $xp,
+            'at_max_level' => $atMaxLevel,
         ];
     }
 
@@ -106,9 +134,10 @@ class QuantumRankService
         $nextLevel = $currentLevel + 1;
         $nextThreshold = $this->xpToReachLevel($nextLevel);
 
-        $through = max(1, (int) config('quantum_rank.profile_ladder_through_level', 40));
+        $through = max(1, (int) config('quantum_rank.profile_ladder_through_level', 100));
         $extend = max(0, (int) config('quantum_rank.profile_ladder_extend_above', 15));
-        $maxLevel = max($through, $currentLevel + $extend);
+        $levelCap = $this->maxLevel();
+        $maxLevel = min($levelCap, max($through, $currentLevel + $extend));
 
         $levels = [];
         for ($level = 1; $level <= $maxLevel; $level++) {
@@ -151,11 +180,15 @@ class QuantumRankService
             $xpRemaining = $state === 'locked' ? max(0, $xpAtMin - $totalXp) : 0;
             $progressPercent = 100;
             if ($state === 'locked') {
-                $progressPercent = $min === 1 ? 0 : (int) min(99, round(($totalXp / max(1, $xpAtMin)) * 100));
+                $progressPercent = $min === 1 ? 0 : (int) min(99, floor(($totalXp / max(1, $xpAtMin)) * 100));
             } elseif ($state === 'current' && $max !== null) {
-                $xpAtMaxPlus = $this->xpToReachLevel($max + 1);
-                $span = max(1, $xpAtMaxPlus - $xpAtMin);
-                $progressPercent = (int) min(100, max(0, round((($totalXp - $xpAtMin) / $span) * 100)));
+                if ($totalXp >= $this->maxTotalXp()) {
+                    $progressPercent = 100;
+                } else {
+                    $xpAtMaxPlus = $this->xpToReachLevel($max + 1);
+                    $span = max(1, $xpAtMaxPlus - $xpAtMin);
+                    $progressPercent = (int) min(100, max(0, floor((($totalXp - $xpAtMin) / $span) * 100)));
+                }
             }
 
             $titleBands[] = [
@@ -173,8 +206,9 @@ class QuantumRankService
             ];
         }
 
-        return [
-            'next_level' => [
+        $nextLevelPayload = null;
+        if ($currentLevel < $this->maxLevel()) {
+            $nextLevelPayload = [
                 'level' => $nextLevel,
                 'title' => $this->titleForLevel($nextLevel),
                 'total_xp_required' => $nextThreshold,
@@ -184,11 +218,16 @@ class QuantumRankService
                 'state' => 'upcoming',
                 'reward' => 'Rank title: '.$this->titleForLevel($nextLevel),
                 'requirement' => 'Reach '.$nextThreshold.' total Quantum XP (+'.$this->xpDeltaForLevel($nextLevel - 1).' XP from your current level).',
-            ],
-            'xp_rewards' => [
-                ['label' => 'Complete a lesson (first time)', 'xp' => '15'],
-                ['label' => 'Pass a module quiz (first time)', 'xp' => '50–75'],
-            ],
+            ];
+        }
+
+        $xpRewards = app(CurriculumXpService::class)->xpRewardLabels();
+
+        return [
+            'next_level' => $nextLevelPayload,
+            'max_level' => $this->maxLevel(),
+            'max_total_xp' => $this->maxTotalXp(),
+            'xp_rewards' => $xpRewards,
             'title_bands' => $titleBands,
             'levels' => $levels,
         ];

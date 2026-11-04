@@ -18,6 +18,7 @@ class DevStudentGraduationService
     public function __construct(
         private LessonProgressService $progress,
         private GraduationService $graduation,
+        private CurriculumXpService $curriculumXp,
     ) {
     }
 
@@ -107,14 +108,8 @@ class DevStudentGraduationService
                 }
             }
 
-            $lessonXp = LessonCompletion::where('user_id', $userId)->count()
-                * StudentEngagementService::LESSON_XP;
-            $moduleQuizXp = ModuleQuizResult::where('user_id', $userId)
-                ->where('passed', true)
-                ->count()
-                * (50 + 25);
-
-            $user->quantum_xp = $lessonXp + $moduleQuizXp;
+            $this->curriculumXp->syncUserQuantumXp($userId);
+            $user->refresh();
             $user->last_activity_date = now()->toDateString();
             $user->save();
 
