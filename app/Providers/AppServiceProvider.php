@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
             $expireMinutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
             return (new MailMessage)
-                ->subject('Reset your Quantum Quizzes password')
+                ->subject('Reset your QuantumRealm password')
                 ->markdown('mail.password-reset', [
                     'name' => $notifiable->name ?? 'there',
                     'expireMinutes' => $expireMinutes,
@@ -58,7 +58,7 @@ class AppServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)
-                ->subject('Verify your Quantum Quizzes email')
+                ->subject('Verify your QuantumRealm email')
                 ->markdown('mail.verify-email', [
                     'name' => $notifiable->name ?? 'there',
                 ])

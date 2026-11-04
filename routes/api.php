@@ -38,14 +38,14 @@ Route::get('/years', [YearController::class, 'index']);
 Route::get('/module-lessons/{moduleId}', [ModuleLessonController::class, 'show']);
 Route::get('/lesson-quizzes/{lessonId}', [LessonQuizController::class, 'index']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'mobile.student'])->group(function () {
     Route::get('/profile', function (Request $request) {
         return response()->json(['user' => $request->user()]);
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'mobile.student'])->group(function () {
     Route::get('/years/galaxy', [YearController::class, 'galaxy']);
     Route::get('/subjects/{year}', [SubjectController::class, 'index']);
     Route::get('/subject-modules/{subjectId}', [SubjectModuleController::class, 'show']);

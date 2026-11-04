@@ -3,7 +3,7 @@
 
 Hello {{ $name }},
 
-We received a request to reset the password for your **Quantum Quizzes** account. Use the button below to open the **CMS** and choose a new password (same site as the teacher/student web portal).
+We received a request to reset the password for your **QuantumRealm** account. Use the button below to open the **CMS** and choose a new password (same site as the teacher/student web portal).
 
 <x-mail::button :url="$actionUrl" color="primary">
 {{ $actionText }}
@@ -16,7 +16,7 @@ This link expires in **{{ $expireMinutes }} minutes**. If it expires, request a 
 If you did not request a password reset, you can safely ignore this email. Your password will not change.
 
 Thanks,<br>
-The Quantum Quizzes team
+The QuantumRealm team
 
 <x-slot:subcopy>
 @lang(

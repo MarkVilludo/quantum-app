@@ -11,7 +11,7 @@
 <span style="color: #f8fafc; font-size: 20px; font-weight: 700; line-height: 44px;">Q</span>
 </td>
 <td style="padding-left: 14px; text-align: left; vertical-align: middle;">
-<span style="display: block; color: #f8fafc; font-size: 20px; font-weight: 600; letter-spacing: -0.02em;">Quantum Quizzes</span>
+<span style="display: block; color: #f8fafc; font-size: 20px; font-weight: 600; letter-spacing: -0.02em;">QuantumRealm</span>
 <span style="display: block; color: #94a3b8; font-size: 12px; margin-top: 2px;">Quantum Realm Learning</span>
 </td>
 </tr>

@@ -36,7 +36,7 @@ const submit = () => {
 
         <h2 class="mb-2 text-xl font-semibold text-gray-900">Reset your password</h2>
         <p class="mb-6 text-sm text-gray-600">
-            Enter the email you use for Quantum Quizzes. We&rsquo;ll send a secure link to choose a new password.
+            Enter the email you use for QuantumRealm. We&rsquo;ll send a secure link to choose a new password.
         </p>
 
         <div

@@ -3,7 +3,7 @@
 
 Hi {{ $name }},
 
-Thanks for joining **Quantum Quizzes**. Tap the button below to verify your email and unlock the mobile app and CMS.
+Thanks for joining **QuantumRealm**. Tap the button below to verify your email and unlock the mobile app and CMS.
 
 <x-mail::button :url="$actionUrl">
 Verify email address

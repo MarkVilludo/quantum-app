@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterAccountRequest;
 use App\Support\CmsUrl;
+use App\Support\MobileAppAccess;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -59,6 +60,10 @@ class AuthController extends Controller
                 'email_verification_required' => true,
                 'email' => $user->email,
             ], 403);
+        }
+
+        if (! MobileAppAccess::isStudent($user)) {
+            return MobileAppAccess::studentOnlyResponse();
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
