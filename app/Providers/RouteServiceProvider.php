@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\CMS\MobileAppReleaseController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -29,6 +30,9 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            Route::get('/download/android', [MobileAppReleaseController::class, 'download'])
+                ->name('android-app.download');
+
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));

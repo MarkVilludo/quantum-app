@@ -83,3 +83,4 @@ For Git layout A, prefer hPanel redeploy + `post-deploy.sh` on the server.
 - [ ] Git subfolder = `quantum-app` (not blank `public_html`)
 - [ ] SSL, PHP 8.1+, MySQL in `.env`
 - [ ] APK at `storage/app/public/mobile-app/QuantumRealm.apk` + `.env` `MOBILE_APP_SOURCE_APK` (see `.env.production.example`), then `php artisan config:clear && php artisan mobile-app:ensure-bundled --force`
+- [ ] Static copy at `public/downloads/QuantumRealm.apk` (post-deploy copies it); verify: `curl -s …/downloads/QuantumRealm.apk | head -c 4 | xxd` → `504b0304`

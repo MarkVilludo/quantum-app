@@ -40,9 +40,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/download/android', [MobileAppReleaseController::class, 'download'])
-    ->name('android-app.download');
-
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\CMS;
 
 use App\Http\Controllers\Controller;
 use App\Services\MobileAppReleaseService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class MobileAppReleaseController extends Controller
 {
@@ -28,7 +29,7 @@ class MobileAppReleaseController extends Controller
                 'original_filename' => $current->original_filename,
                 'size_human' => $this->releases->publicMeta()['size_human'],
                 'updated_at' => $current->updated_at?->toIso8601String(),
-                'download_url' => route('android-app.download'),
+                'download_url' => $this->releases->publicMeta()['download_url'] ?? $this->releases->staticDownloadUrl(),
             ] : null,
         ]);
     }
@@ -58,7 +59,7 @@ class MobileAppReleaseController extends Controller
         return redirect()->route('admin.mobile-app.edit')->with('success', 'Android app uploaded. The homepage download link is updated.');
     }
 
-    public function download(): StreamedResponse
+    public function download(): RedirectResponse|BinaryFileResponse
     {
         $release = $this->releases->current();
 
@@ -67,10 +68,19 @@ class MobileAppReleaseController extends Controller
         $disk = Storage::disk('public');
         abort_unless($disk->exists($release->disk_path), 404);
 
-        $downloadName = config('mobile-app.download_filename', 'QuantumRealm.apk');
+        if (! $this->releases->staticDownloadIsValid()) {
+            $this->releases->syncStaticDownloadFromDiskPath($release->disk_path);
+        }
 
-        return $disk->download($release->disk_path, $downloadName, [
+        if ($this->releases->staticDownloadIsValid()) {
+            return redirect($this->releases->staticDownloadUrl());
+        }
+
+        $downloadName = (string) config('mobile-app.download_filename', 'QuantumRealm.apk');
+
+        return response()->file($disk->path($release->disk_path), [
             'Content-Type' => 'application/vnd.android.package-archive',
+            'Content-Disposition' => 'attachment; filename="'.$downloadName.'"',
         ]);
     }
 

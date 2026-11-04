@@ -10,6 +10,11 @@ return [
 
     'download_filename' => env('MOBILE_APP_DOWNLOAD_NAME', 'QuantumRealm.apk'),
 
+    /*
+    | Web-root path (under public/) served by the web server without PHP.
+    */
+    'static_download_subdirectory' => env('MOBILE_APP_STATIC_DOWNLOAD_DIR', 'downloads'),
+
     'storage_directory' => 'mobile-app',
 
     /*

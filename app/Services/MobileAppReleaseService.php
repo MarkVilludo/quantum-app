@@ -24,7 +24,7 @@ class MobileAppReleaseService
      */
     public function publicMeta(): array
     {
-        $downloadUrl = '/download/android';
+        $downloadUrl = $this->staticDownloadUrl();
         $release = $this->current();
 
         if ($release === null || ! Storage::disk('public')->exists($release->disk_path)) {
@@ -43,9 +43,62 @@ class MobileAppReleaseService
             'version_name' => $release->version_name,
             'version_code' => $release->version_code,
             'size_human' => $this->formatBytes($release->size_bytes),
-            'download_url' => $downloadUrl,
+            'download_url' => $this->staticDownloadIsValid() ? $downloadUrl : '/download/android',
             'updated_at' => $release->updated_at?->toIso8601String(),
         ];
+    }
+
+    public function staticDownloadUrl(): string
+    {
+        $filename = (string) config('mobile-app.download_filename', 'QuantumRealm.apk');
+        $directory = trim((string) config('mobile-app.static_download_subdirectory', 'downloads'), '/');
+
+        return '/'.$directory.'/'.$filename;
+    }
+
+    public function staticDownloadPublicPath(): string
+    {
+        $filename = (string) config('mobile-app.download_filename', 'QuantumRealm.apk');
+        $directory = trim((string) config('mobile-app.static_download_subdirectory', 'downloads'), '/');
+
+        return public_path($directory.DIRECTORY_SEPARATOR.$filename);
+    }
+
+    public function staticDownloadIsValid(): bool
+    {
+        $path = $this->staticDownloadPublicPath();
+
+        if (! is_file($path)) {
+            return false;
+        }
+
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            return false;
+        }
+
+        $magic = fread($handle, 4);
+        fclose($handle);
+
+        return $magic === "PK\x03\x04";
+    }
+
+    public function syncStaticDownloadFromDiskPath(string $diskPath): bool
+    {
+        $disk = Storage::disk('public');
+        if (! $disk->exists($diskPath)) {
+            return false;
+        }
+
+        $dest = $this->staticDownloadPublicPath();
+        $directory = dirname($dest);
+        if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            return false;
+        }
+
+        $source = $disk->path($diskPath);
+
+        return copy($source, $dest);
     }
 
     public function storeUpload(UploadedFile $file, string $versionName, ?int $versionCode, ?User $uploader): MobileAppRelease
@@ -64,7 +117,7 @@ class MobileAppReleaseService
 
             $this->deleteOrphanedApkFiles($directory, $path);
 
-            return MobileAppRelease::create([
+            $release = MobileAppRelease::create([
                 'version_name' => $versionName,
                 'version_code' => $versionCode,
                 'disk_path' => $path,
@@ -73,6 +126,10 @@ class MobileAppReleaseService
                 'uploaded_by' => $uploader?->id,
                 'is_current' => true,
             ]);
+
+            $this->syncStaticDownloadFromDiskPath($path);
+
+            return $release;
         });
     }
 
@@ -93,7 +150,7 @@ class MobileAppReleaseService
 
             $this->deleteOrphanedApkFiles(config('mobile-app.storage_directory', 'mobile-app'), $dest);
 
-            return MobileAppRelease::create([
+            $release = MobileAppRelease::create([
                 'version_name' => $versionName,
                 'version_code' => $versionCode,
                 'disk_path' => $dest,
@@ -102,6 +159,10 @@ class MobileAppReleaseService
                 'uploaded_by' => $uploader?->id,
                 'is_current' => true,
             ]);
+
+            $this->syncStaticDownloadFromDiskPath($dest);
+
+            return $release;
         });
     }
 

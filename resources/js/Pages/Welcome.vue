@@ -4,7 +4,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const page = usePage();
-const androidApp = computed(() => page.props.androidApp ?? { available: false, download_url: '/download/android' });
+const androidApp = computed(() => page.props.androidApp ?? { available: false, download_url: '/downloads/QuantumRealm.apk' });
 
 defineProps({
     canLogin: {
@@ -71,7 +71,7 @@ const steps = [
                 <nav class="flex items-center gap-2 sm:gap-3">
                     <a
                         v-if="androidApp?.available"
-                        href="/download/android"
+                        :href="androidApp.download_url"
                         class="qr-btn-primary inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs sm:gap-2 sm:px-4 sm:text-sm"
                     >
                         <svg class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

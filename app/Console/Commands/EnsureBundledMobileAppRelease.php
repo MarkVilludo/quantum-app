@@ -56,7 +56,10 @@ class EnsureBundledMobileAppRelease extends Command
             ]);
         });
 
+        $releases->syncStaticDownloadFromDiskPath($diskPath);
+
         $this->info('Registered APK at '.$diskPath.' for download ('.$versionName.').');
+        $this->line('Static URL: '.$releases->staticDownloadUrl());
 
         return self::SUCCESS;
     }
