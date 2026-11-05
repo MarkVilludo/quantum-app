@@ -29,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        CmsUrl::applyRoot();
+
         $this->configureViteForMobileEmulator();
 
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {

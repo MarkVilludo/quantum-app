@@ -48,7 +48,15 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 chmod -R ug+rwx storage bootstrap/cache
 ```
 
-Ensure **`.env`** exists in `public_html/quantum-app/` (MySQL from hPanel, `APP_URL=https://quantumrealm.tech`).
+Ensure **`.env`** exists in `quantum-app/` (MySQL from hPanel, `APP_URL=https://quantumrealm.tech`).
+
+**Email verification (403 INVALID SIGNATURE):**
+
+- Deploy includes **relative signed URLs** (`signed:relative`) so links work when Hostinger serves HTTPS but PHP sees HTTP.
+- `APP_URL` and `CMS_URL` must both be `https://quantumrealm.tech` (no trailing slash, no `www` unless that is your site).
+- Set `APP_KEY` once with `php artisan key:generate` — do not rotate it or old verification links break.
+- After any `.env` change: `php artisan config:clear && php artisan config:cache`
+- Users must tap **Resend verification email** in the app after you fix the server (old links stay invalid).
 
 ## Vite / `public_html`
 

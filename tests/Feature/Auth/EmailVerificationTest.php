@@ -3,10 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Support\CmsUrl;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
@@ -26,13 +26,9 @@ class EmailVerificationTest extends TestCase
     {
         $user = User::factory()->unverified()->create();
 
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-                'verification_hash' => sha1($user->getEmailForVerification()),
-            ]
+        $verificationUrl = CmsUrl::emailVerification(
+            $user->id,
+            sha1($user->getEmailForVerification()),
         );
 
         $response = $this->get($verificationUrl);
@@ -45,13 +41,12 @@ class EmailVerificationTest extends TestCase
     {
         $user = User::factory()->unverified()->create();
 
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-                'verification_hash' => sha1('wrong-email'),
-            ]
+        config(['app.cms_url' => 'http://127.0.0.1:8000']);
+        CmsUrl::applyRoot();
+
+        $verificationUrl = CmsUrl::emailVerification(
+            $user->id,
+            sha1('wrong-email'),
         );
 
         $response = $this->get($verificationUrl);

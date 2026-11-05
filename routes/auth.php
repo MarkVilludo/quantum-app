@@ -35,7 +35,7 @@ Route::middleware('guest')->group(function () {
                 ->name('password.store');
 
     Route::get('verify-email/{id}/{verification_hash}', VerifyEmailController::class)
-                ->middleware(['signed', 'throttle:6,1'])
+                ->middleware(['signed:relative', 'throttle:6,1'])
                 ->name('verification.verify');
 });
 

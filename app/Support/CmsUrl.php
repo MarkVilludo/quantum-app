@@ -2,11 +2,24 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\URL;
+
 class CmsUrl
 {
     public static function base(): string
     {
         return rtrim((string) config('app.cms_url', config('app.url')), '/');
+    }
+
+    /** Force signed links and mail URLs to use {@see base()}. */
+    public static function applyRoot(): void
+    {
+        $root = self::base();
+        URL::forceRootUrl($root);
+
+        if (str_starts_with($root, 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 
     public static function passwordReset(string $token, string $email): string
@@ -23,7 +36,9 @@ class CmsUrl
 
     public static function emailVerification(int|string $userId, string $hash, int $expiresMinutes = 60): string
     {
-        $relative = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        self::applyRoot();
+
+        $relative = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes($expiresMinutes),
             [
