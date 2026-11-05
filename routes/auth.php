@@ -33,11 +33,13 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
                 ->name('password.store');
-
-    Route::get('verify-email/{id}/{verification_hash}', VerifyEmailController::class)
-                ->middleware(['signed:relative', 'throttle:6,1'])
-                ->name('verification.verify');
 });
+
+// Must not use `guest`: users who register stay logged in on /verify-email; Gmail opens the
+// same session — guest would redirect to /dashboard and `verified` would bounce back here.
+Route::get('verify-email/{id}/{verification_hash}', VerifyEmailController::class)
+    ->middleware(['signed:relative', 'throttle:6,1'])
+    ->name('verification.verify');
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)

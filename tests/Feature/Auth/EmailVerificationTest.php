@@ -37,6 +37,21 @@ class EmailVerificationTest extends TestCase
         $this->assertTrue($user->fresh()->hasVerifiedEmail(), 'Response status: '.$response->status());
     }
 
+    public function test_logged_in_user_can_verify_via_email_link(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $verificationUrl = CmsUrl::emailVerification(
+            $user->id,
+            sha1($user->getEmailForVerification()),
+        );
+
+        $response = $this->actingAs($user)->get($verificationUrl);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+    }
+
     public function test_email_is_not_verified_with_invalid_hash(): void
     {
         $user = User::factory()->unverified()->create();

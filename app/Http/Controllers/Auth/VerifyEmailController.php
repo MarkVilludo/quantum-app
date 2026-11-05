@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VerifyEmailController extends Controller
 {
@@ -25,14 +26,21 @@ class VerifyEmailController extends Controller
             abort(403, 'Invalid verification link.');
         }
 
+        $sessionUser = Auth::user();
+        $sameSession = $sessionUser && (int) $sessionUser->getAuthIdentifier() === (int) $user->getKey();
+
         if ($user->hasVerifiedEmail()) {
-            return redirect()->route('login')->with('status', 'email-already-verified');
+            return $sameSession
+                ? redirect()->route('dashboard')->with('status', 'email-already-verified')
+                : redirect()->route('login')->with('status', 'email-already-verified');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        return redirect()->route('login')->with('status', 'email-verified');
+        return $sameSession
+            ? redirect()->route('dashboard')->with('status', 'email-verified')
+            : redirect()->route('login')->with('status', 'email-verified');
     }
 }
