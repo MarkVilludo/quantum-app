@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\CMS;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AdminController extends Controller
@@ -14,7 +15,7 @@ class AdminController extends Controller
         $search = $request->input('search');
 
         $users = User::query()
-            ->whereNot('role', 'admin')
+            ->withTrashed()
             ->with('year')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -22,8 +23,10 @@ class AdminController extends Controller
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
+            ->orderByDesc('deleted_at')
+            ->orderBy('name')
             ->paginate(10)
-            ->withQueryString(); // retain the search query in pagination links
+            ->withQueryString();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
@@ -38,21 +41,48 @@ class AdminController extends Controller
 
     public function store(Request $request)
     {
+        $email = User::normalizeEmail($request->input('email', ''));
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'year_id' => 'nullable',
-            'email' => 'required|email|unique:users,email',
+            'email' => [
+                'required',
+                'email',
+                function (string $attribute, mixed $value, \Closure $fail) use ($email): void {
+                    if ($email === '') {
+                        return;
+                    }
+                    $existing = User::query()
+                        ->whereRaw('LOWER(email) = ?', [$email])
+                        ->first(['id', 'email', 'role']);
+                    if ($existing !== null) {
+                        $fail(sprintf(
+                            'The email has already been taken (%s account — search Users for "%s" or edit user #%d).',
+                            $existing->role,
+                            $existing->email,
+                            $existing->id
+                        ));
+                    }
+                },
+            ],
             'password' => 'required|string|min:8',
             'role' => 'required|in:teacher,student',
         ]);
 
+        User::onlyTrashed()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->forceDelete();
+
         User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'email' => $email,
             'password' => bcrypt($validated['password']),
             'role' => $validated['role'],
-            'year_id' => $request->year_id
+            'year_id' => $request->year_id,
         ]);
+
+        return redirect()->route('users.index');
     }
 
     public function edit(User $user)
@@ -65,28 +95,54 @@ class AdminController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $email = User::normalizeEmail($request->input('email', ''));
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'year_id' => 'nullable',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            // Only validate the password if it's present
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($user->id),
+                function (string $attribute, mixed $value, \Closure $fail) use ($email, $user): void {
+                    if ($email === '') {
+                        return;
+                    }
+                    $conflict = User::withTrashed()
+                        ->whereRaw('LOWER(email) = ?', [$email])
+                        ->where('id', '!=', $user->id)
+                        ->exists();
+                    if ($conflict) {
+                        $fail('The email has already been taken.');
+                    }
+                },
+            ],
             'password' => 'nullable|min:8',
             'role' => 'required|in:student,teacher',
         ]);
 
-        // If a new password is provided, update it
+        User::onlyTrashed()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->where('id', '!=', $user->id)
+            ->forceDelete();
+
+        $data['email'] = $email;
+
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
         } else {
-            // Remove password from the data if not provided
             unset($data['password']);
         }
         $user->year_id = $data['year_id'] ?? null;
         $user->update($data);
+
+        return redirect()->route('users.index');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
+
+        return redirect()->route('users.index');
     }
 }

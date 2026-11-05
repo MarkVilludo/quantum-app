@@ -60,15 +60,29 @@ const deleteUser = (userId) => {
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Year / year handled</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="user in users.data" :key="user.id">
+                        <tr
+                            v-for="user in users.data"
+                            :key="user.id"
+                            :class="{ 'bg-red-50/80': user.deleted_at }"
+                        >
                             <td class="font-medium text-gray-900">{{ user.name }}</td>
                             <td>{{ user.email }}</td>
                             <td class="capitalize">{{ user.role }}</td>
+                            <td>
+                                <span
+                                    v-if="user.deleted_at"
+                                    class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
+                                >
+                                    Deleted
+                                </span>
+                                <span v-else class="text-xs text-gray-500">Active</span>
+                            </td>
                             <td class="capitalize">{{ user.year?.name ?? '—' }}</td>
                             <td class="text-center">
                                 <a :href="route('users.edit', user.id)" class="qr-btn-warning">Edit</a>
