@@ -101,14 +101,17 @@ Route::post('/activities/{activity}/questions', [ActivityQuestionController::cla
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/quiz-results', [LessonQuizResultController::class, 'index'])->name('quiz-results.index');
-    //admin user management
-    Route::get('/users', [AdminController::class, 'users'])->name('users.index');
-    Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
-    Route::post('/users', [AdminController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [AdminController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
-    Route::post('/users/{user}/restore', [AdminController::class, 'restore'])->name('users.restore');
+    // Admin user management (soft-delete: hidden from list unless ?show_deleted=1)
+    Route::middleware('admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+        Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
+        Route::post('/users', [AdminController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [AdminController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{user}/delete', [AdminController::class, 'destroy'])->name('users.destroy.post');
+        Route::post('/users/{user}/restore', [AdminController::class, 'restore'])->name('users.restore');
+    });
 
     Route::get('/admin/mobile-app', [MobileAppReleaseController::class, 'edit'])->name('admin.mobile-app.edit');
     Route::post('/admin/mobile-app', [MobileAppReleaseController::class, 'store'])->name('admin.mobile-app.store');
