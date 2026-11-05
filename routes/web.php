@@ -110,7 +110,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/users/{user}', [AdminController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
         Route::post('/users/{user}/delete', [AdminController::class, 'destroy'])->name('users.destroy.post');
-        Route::post('/users/{user}/restore', [AdminController::class, 'restore'])->name('users.restore');
     });
 
     Route::get('/admin/mobile-app', [MobileAppReleaseController::class, 'edit'])->name('admin.mobile-app.edit');

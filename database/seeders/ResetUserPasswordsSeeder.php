@@ -14,7 +14,7 @@ class ResetUserPasswordsSeeder extends Seeder
      */
     public function run(): void
     {
-        if (User::query()->withTrashed()->count() === 0) {
+        if (User::query()->count() === 0) {
             $this->command?->warn('No users found — creating default dev accounts…');
             $this->ensureCurriculumSeeded();
             $this->seedDefaultUsers();
@@ -22,7 +22,7 @@ class ResetUserPasswordsSeeder extends Seeder
 
         $this->ensureSecondYearTeacher();
 
-        User::query()->withTrashed()->each(function (User $user) {
+        User::query()->each(function (User $user) {
             $user->forceFill([
                 'password' => 'password',
                 'email_verified_at' => $user->email_verified_at ?? now(),
@@ -71,7 +71,7 @@ class ResetUserPasswordsSeeder extends Seeder
     {
         $secondYearId = Year::query()->where('name', 'Second Year')->value('id');
 
-        $teacher = User::withTrashed()->firstOrCreate(
+        $teacher = User::firstOrCreate(
             ['email' => 'Harrypotter_v2@gmail.com'],
             [
                 'name' => 'Harry Potter',
@@ -80,10 +80,6 @@ class ResetUserPasswordsSeeder extends Seeder
                 'year_id' => $secondYearId,
             ]
         );
-
-        if ($teacher->trashed()) {
-            $teacher->restore();
-        }
 
         $teacher->forceFill([
             'name' => 'Harry Potter',

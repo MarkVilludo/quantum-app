@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             QuizSeeder::class,
         ]);
 
-        $admin = \App\Models\User::withTrashed()->firstOrCreate(
+        $admin = \App\Models\User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin User',
@@ -29,14 +29,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        if ($admin->trashed()) {
-            $admin->restore();
-        }
         if (! $admin->hasVerifiedEmail()) {
             $admin->forceFill(['email_verified_at' => now()])->saveQuietly();
         }
 
-        if (\App\Models\User::withTrashed()->where('role', 'teacher')->doesntExist()) {
+        if (\App\Models\User::query()->where('role', 'teacher')->doesntExist()) {
             \App\Models\User::factory(3)->create([
                 'role' => 'teacher',
                 'password' => 'password',

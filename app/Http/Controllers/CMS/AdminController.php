@@ -13,10 +13,8 @@ class AdminController extends Controller
     public function users(Request $request)
     {
         $search = $request->input('search');
-        $showDeleted = $request->boolean('show_deleted');
 
         $users = User::query()
-            ->when($showDeleted, fn ($q) => $q->withTrashed())
             ->with('year')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -24,17 +22,13 @@ class AdminController extends Controller
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
-            ->when($showDeleted, fn ($q) => $q->orderByDesc('deleted_at'))
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
-            'filters' => [
-                'search' => $search,
-                'show_deleted' => $showDeleted,
-            ],
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -57,9 +51,9 @@ class AdminController extends Controller
                     if ($email === '') {
                         return;
                     }
-                    $existing = User::withTrashed()
+                    $existing = User::query()
                         ->whereRaw('LOWER(email) = ?', [$email])
-                        ->first(['id', 'email', 'role', 'deleted_at']);
+                        ->first(['id', 'email', 'role']);
                     if ($existing !== null) {
                         $fail(sprintf(
                             'The email has already been taken (%s account — search Users for "%s" or edit user #%d).',
@@ -74,10 +68,6 @@ class AdminController extends Controller
             'role' => 'required|in:teacher,student',
         ]);
 
-        User::onlyTrashed()
-            ->whereRaw('LOWER(email) = ?', [$email])
-            ->forceDelete();
-
         User::create([
             'name' => $validated['name'],
             'email' => $email,
@@ -86,14 +76,13 @@ class AdminController extends Controller
             'year_id' => $request->year_id,
         ]);
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('success', 'User created.');
     }
 
     public function edit(User $user)
     {
-        // Return the edit view with the user data
         return inertia('Users/Edit', [
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -108,27 +97,10 @@ class AdminController extends Controller
                 'required',
                 'email',
                 Rule::unique('users', 'email')->ignore($user->id),
-                function (string $attribute, mixed $value, \Closure $fail) use ($email, $user): void {
-                    if ($email === '') {
-                        return;
-                    }
-                    $conflict = User::withTrashed()
-                        ->whereRaw('LOWER(email) = ?', [$email])
-                        ->where('id', '!=', $user->id)
-                        ->exists();
-                    if ($conflict) {
-                        $fail('The email has already been taken.');
-                    }
-                },
             ],
             'password' => 'nullable|min:8',
             'role' => 'required|in:student,teacher,admin',
         ]);
-
-        User::onlyTrashed()
-            ->whereRaw('LOWER(email) = ?', [$email])
-            ->where('id', '!=', $user->id)
-            ->forceDelete();
 
         $data['email'] = $email;
 
@@ -140,7 +112,7 @@ class AdminController extends Controller
         $user->year_id = $data['year_id'] ?? null;
         $user->update($data);
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('success', 'User updated.');
     }
 
     public function destroy(Request $request, User $user)
@@ -153,7 +125,7 @@ class AdminController extends Controller
                 ->with('error', 'You cannot delete your own account while signed in.');
         }
 
-        if ($user->role === 'admin' && ! $user->trashed()) {
+        if ($user->role === 'admin') {
             $otherAdmins = User::query()
                 ->where('role', 'admin')
                 ->whereKeyNot($user->getKey())
@@ -166,27 +138,10 @@ class AdminController extends Controller
             }
         }
 
-        if ($user->trashed()) {
-            $user->forceDelete();
-            $message = 'User permanently deleted.';
-        } else {
-            $user->delete();
-            $message = 'User removed. Turn on “Show deleted users” to restore or permanently delete.';
-        }
+        $user->delete();
 
         return redirect()
-            ->route('users.index', $request->only('show_deleted'))
-            ->with('success', $message);
-    }
-
-    public function restore(Request $request, User $user): \Illuminate\Http\RedirectResponse
-    {
-        if ($user->trashed()) {
-            $user->restore();
-        }
-
-        return redirect()
-            ->route('users.index', ['show_deleted' => true])
-            ->with('success', 'User restored.');
+            ->route('users.index')
+            ->with('success', 'User deleted.');
     }
 }

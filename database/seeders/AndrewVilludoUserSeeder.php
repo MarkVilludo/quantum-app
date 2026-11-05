@@ -18,7 +18,7 @@ class AndrewVilludoUserSeeder extends Seeder
         $email = User::normalizeEmail(self::EMAIL);
         $firstYearId = Year::query()->where('name', 'First Year')->value('id');
 
-        $user = User::withTrashed()->firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => $email],
             [
                 'name' => 'Andrew Villudo',
@@ -27,10 +27,6 @@ class AndrewVilludoUserSeeder extends Seeder
                 'year_id' => $firstYearId,
             ]
         );
-
-        if ($user->trashed()) {
-            $user->restore();
-        }
 
         $user->forceFill([
             'name' => 'Andrew Villudo',

@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Http\Controllers\CMS\MobileAppReleaseController;
-use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -26,10 +25,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Route::bind('user', function (string $value) {
-            return User::withTrashed()->whereKey($value)->firstOrFail();
-        });
-
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
