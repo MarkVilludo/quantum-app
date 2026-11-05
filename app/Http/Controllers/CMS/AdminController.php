@@ -118,7 +118,7 @@ class AdminController extends Controller
                 },
             ],
             'password' => 'nullable|min:8',
-            'role' => 'required|in:student,teacher',
+            'role' => 'required|in:student,teacher,admin',
         ]);
 
         User::onlyTrashed()
@@ -141,7 +141,20 @@ class AdminController extends Controller
 
     public function destroy(User $user)
     {
-        $user->delete();
+        if ($user->trashed()) {
+            $user->forceDelete();
+        } else {
+            $user->delete();
+        }
+
+        return redirect()->route('users.index');
+    }
+
+    public function restore(User $user): \Illuminate\Http\RedirectResponse
+    {
+        if ($user->trashed()) {
+            $user->restore();
+        }
 
         return redirect()->route('users.index');
     }

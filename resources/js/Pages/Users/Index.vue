@@ -22,11 +22,19 @@ watch(searchQuery, () => {
     });
 });
 
-const deleteUser = (userId) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+const deleteUser = (userId, permanent = false) => {
+    const message = permanent
+        ? 'Permanently delete this user? This cannot be undone.'
+        : 'Soft-delete this user? You can restore them from the Users list.';
+    if (confirm(message)) {
         const form = useForm({});
         form.delete(route('users.destroy', userId));
     }
+};
+
+const restoreUser = (userId) => {
+    const form = useForm({});
+    form.post(route('users.restore', userId));
 };
 
 </script>
@@ -84,9 +92,21 @@ const deleteUser = (userId) => {
                                 <span v-else class="text-xs text-gray-500">Active</span>
                             </td>
                             <td class="capitalize">{{ user.year?.name ?? '—' }}</td>
-                            <td class="text-center">
-                                <a :href="route('users.edit', user.id)" class="qr-btn-warning">Edit</a>
-                                <button type="button" @click="deleteUser(user.id)" class="qr-btn-danger ml-3">Delete</button>
+                            <td class="text-center whitespace-nowrap">
+                                <template v-if="user.deleted_at">
+                                    <button type="button" class="qr-btn-primary" @click="restoreUser(user.id)">
+                                        Restore
+                                    </button>
+                                    <button type="button" class="qr-btn-danger ml-2" @click="deleteUser(user.id, true)">
+                                        Delete forever
+                                    </button>
+                                </template>
+                                <template v-else>
+                                    <a :href="route('users.edit', user.id)" class="qr-btn-warning">Edit</a>
+                                    <button type="button" class="qr-btn-danger ml-3" @click="deleteUser(user.id)">
+                                        Delete
+                                    </button>
+                                </template>
                             </td>
                         </tr>
                     </tbody>

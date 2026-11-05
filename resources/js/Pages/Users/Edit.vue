@@ -76,6 +76,7 @@ const goBack = () => {
                             <select v-model="form.role" class="w-full border p-2 rounded">
                                 <option value="student">Student</option>
                                 <option value="teacher">Teacher</option>
+                                <option v-if="user.role === 'admin'" value="admin">Admin</option>
                             </select>
                             <div v-if="form.errors.role" class="text-red-500 text-sm">{{ form.errors.role }}</div>
                         </div>
